@@ -48,6 +48,8 @@
 **
 ***********************************************************************/
 
+#define LZF_VERSION 0x0105 /* 1.5 */
+
 /*
  * Compress in_len bytes stored at the memory block starting at
  * in_data and write the result to out_data, up to a maximum length
@@ -60,15 +62,16 @@
  * the data uncompressed otherwise.
  *
  * lzf_compress might use different algorithms on different systems and
- * thus might result in different compressed strings depending on the
- * phase of the moon or similar factors. However, all these strings are
- * architecture-independent and will result in the original data when
- * decompressed using lzf_decompress.
+ * even diferent runs, thus might result in different compressed strings
+ * depending on the phase of the moon or similar factors. However, all
+ * these strings are architecture-independent and will result in the
+ * original data when decompressed using lzf_decompress.
  *
  * The buffers must not be overlapping.
  *
  * If the option LZF_STATE_ARG is enabled, an extra argument must be
- * supplied which is not reflected in this header file. Refer to lzf_c.c.
+ * supplied which is not reflected in this header file. Refer to lzfP.h
+ * and lzf_c.c.
  *
  */
 unsigned int 

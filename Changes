@@ -1,3 +1,8 @@
+1.5  Tue Mar  8 20:23:23 CET 2005
+	- incorporated improvements by Adam D. Moss,
+          which includes a new VERY_FAST mode which is
+          a bit slower than ULTRA_FAST but much better,
+          and enabled it as default.
 
 1.401 Thu Mar  3 18:00:52 CET 2005
 	- use cstring in c++, not string.h.

@@ -39,7 +39,7 @@
 #ifndef LZFP_h
 #define LZFP_h
 
-#define STANDALONE /* at the moment, this is ok. */
+#define STANDALONE 1 /* at the moment, this is ok. */
 
 #ifndef STANDALONE
 # include "lzf.h"
@@ -49,29 +49,40 @@
  * size of hashtable is (1 << HLOG) * sizeof (char *)
  * decompression is independent of the hash table size
  * the difference between 15 and 14 is very small
- * for small blocks (and 14 is also faster).
- * For a low-memory configuration, use HLOG == 13;
- * For best compression, use 15 or 16.
+ * for small blocks (and 14 is usually a but faster).
+ * For a low-memory/faster configuration, use HLOG == 13;
+ * For best compression, use 15 or 16 (or more).
  */
 #ifndef HLOG
 # define HLOG 14
 #endif
 
 /*
- * sacrifice some compression quality in favour of compression speed.
+ * sacrifice very little compression quality in favour of compression speed.
+ * This gives almost the same compression as the default code, and is
+ * (very roughly) 15% faster. This is the preferable mode of operation.
+ */
+
+#ifndef VERY_FAST
+# define VERY_FAST 1
+#endif
+
+/*
+ * sacrifice some more compression quality in favour of compression speed.
  * (roughly 1-2% worse compression for large blocks and
  * 9-10% for small, redundant, blocks and >>20% better speed in both cases)
- * In short: enable this for binary data, disable this for text data.
+ * In short: when in need for speed, enable this for binary data,
+ * possibly disable this for text data.
  */
 #ifndef ULTRA_FAST
-# define ULTRA_FAST 1
+# define ULTRA_FAST 0
 #endif
 
 /*
  * unconditionally aligning does not cost very much, so do it if unsure
  */
 #ifndef STRICT_ALIGN
-# define STRICT_ALIGN !defined(__i386)
+# define STRICT_ALIGN !(defined(__i386) || defined (__amd64))
 #endif
 
 /*
@@ -83,8 +94,8 @@
 #endif
 
 /*
- * you may choose to pre-set the hash table (might be faster on modern cpus
- * and large (>>64k) blocks)
+ * you may choose to pre-set the hash table (might be faster on some
+ * modern cpus and large (>>64k) blocks)
  */
 #ifndef INIT_HTAB
 # define INIT_HTAB 0
@@ -125,6 +136,12 @@ typedef const u8 *LZF_STATE[1 << (HLOG)];
 # else
 #  undef STRICT_ALIGN
 #  define STRICT_ALIGN 1
+# endif
+#endif
+
+#if ULTRA_FAST
+# if defined(VERY_FAST)
+#  undef VERY_FAST
 # endif
 #endif
 
