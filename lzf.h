@@ -56,7 +56,7 @@
  *
  * The buffers must not be overlapping.
  *
- * If the option LZF_STATE_ART is enabled, an extra argument must be
+ * If the option LZF_STATE_ARG is enabled, an extra argument must be
  * supplied which is not reflected in this header file. Refer to lzf_c.c.
  *
  */
