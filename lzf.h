@@ -56,7 +56,8 @@
  * If the output buffer is not large enough or any error occurs
  * return 0, otherwise return the number of bytes used (which might
  * be considerably larger than in_len, so it makes sense to always
- * use out_len == in_len).
+ * use out_len == in_len - 1), to ensure _some_ compression, and store
+ * the data uncompressed otherwise.
  *
  * lzf_compress might use different algorithms on different systems and
  * thus might result in different compressed strings depending on the
