@@ -129,7 +129,11 @@ typedef const u8 *LZF_STATE[1 << (HLOG)];
 #endif
 
 #if USE_MEMCPY || INIT_HTAB
-# include <string.h>
+# ifdef __cplusplus
+#  include <cstring>
+# else
+#  include <string.h>
+# endif
 #endif
 
 #endif
