@@ -1,0 +1,15 @@
+0.4
+	- typoe fix.
+        - lzf demo program now properly decompresses small files.
+        - fix another 64 bit issue, found by Laurent Deniel.
+
+0.3  Tue Jan 16 13:21:14 CET 2001
+	- fix silly beginners 32/64 bit mistake.
+
+0.2  Thu Jan  4 05:56:42 CET 2001
+	- now totally indepdendent of autoconfig, for
+          easy inclusion into other programs.
+        - much better fine-tuning, faster and better than 0.1.
+
+0.1
+	- initial release.
