@@ -1,4 +1,8 @@
-0.4
+0.5
+	- slightly better compression ratio, almost unmeasurably
+          slower.
+
+0.4  Thu Jun 13 14:11:10 CEST 2002
 	- typoe fix.
         - lzf demo program now properly decompresses small files.
         - fix another 64 bit issue, found by Laurent Deniel.

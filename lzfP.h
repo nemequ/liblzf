@@ -50,7 +50,7 @@
 /*
  * sacrifice some compression quality in favour of compression speed.
  * (roughly 1-2% worse compression for large blocks and
- * 9-10% for small, redundant, blocks and 20% better speed in both cases)
+ * 9-10% for small, redundant, blocks and >>20% better speed in both cases)
  * In short: enable this for binary data, disable this for text data.
  */
 #ifndef ULTRA_FAST
