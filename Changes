@@ -1,3 +1,7 @@
+1.2  Mon Dec 29 13:47:28 CET 2003
+	- avoid spurious memory accesses after the to-be-compressed
+          memory region. originally reported by Michal Zalewski.
+
 1.1  Tue Dec 23 05:48:32 CET 2003
 	- removed #warn directive, it's not worth the hassle.
         - add LZF_STACK_ARG and AVOID_ERRNO configurations

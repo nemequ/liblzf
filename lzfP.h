@@ -91,11 +91,11 @@
 
 /*
  * Wether to pass the LZF_STATE variable as argument, or allocate it
- * on the stack. For small-stack environments, define this to zero.
+ * on the stack. For small-stack environments, define this to 1.
  * NOTE: this breaks the prototype in lzf.h.
  */
 #ifndef LZF_STATE_ARG
-# define LZF_STATE_ARG 1
+# define LZF_STATE_ARG 0
 #endif
 
 /*****************************************************************************/
