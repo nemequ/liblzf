@@ -1,4 +1,6 @@
-1.3 <unreleased>
+1.3  Thu Mar 25 15:41:17 CET 2004
+	- changed license of lzf core code to explicitly allow
+          relicensing under the GPLv2.
 	- added VPATH support as suggested by Björn Eriksson.
 
 1.2  Mon Dec 29 13:47:28 CET 2003
