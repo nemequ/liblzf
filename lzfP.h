@@ -93,7 +93,6 @@ typedef unsigned char u8;
 # elif UINT_MAX == 65535
     typedef unsigned int u16;
 # else
-#  warn need 16 bit datatype when STRICT_ALIGN == 0, this is non-fatal
 #  undef STRICT_ALIGN
 #  define STRICT_ALIGN 1
 # endif

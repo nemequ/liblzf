@@ -1,3 +1,6 @@
+1.1
+	- removed #warn directive, it's not worth the hassle.
+
 1.0  Sun Nov 17 12:37:37 CET 2002
 	- slightly better compression ratio, almost unmeasurably
           slower.
