@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2002 Marc Alexander Lehmann <pcg@goof.com>
+ * Copyright (c) 2000-2003 Marc Alexander Lehmann <pcg@goof.com>
  * 
  * Redistribution and use in source and binary forms, with or without modifica-
  * tion, are permitted provided that the following conditions are met:
@@ -80,10 +80,28 @@
 # define INIT_HTAB 0
 #endif
 
+/*
+ * avoid assigning values to errno variable? for some embedding purposes
+ * (linux kernel for example), this is not 
+ */
+#ifndef AVOID_ERRNO
+# define AVOID_ERRNO 0
+#endif
+
+/*
+ * Wether to pass the LZF_STATE variable as argument, or allocate it
+ * on the stack. For small-stack environments, define this to zero.
+ */
+#ifndef LZF_STATE_ARG
+# define LZF_STATE_ARG 1
+#endif
+
 /*****************************************************************************/
 /* nothing should be changed below */
 
 typedef unsigned char u8;
+
+typedef const u8 *LZF_STATE[1 << (HLOG)];
 
 #if !STRICT_ALIGN
 /* for unaligned accesses we need a 16 bit datatype. */
