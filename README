@@ -18,7 +18,7 @@ DESCRIPTION
     is really intented to be used inside larger programs.
 
 AUTHOR
-    This library was written by Marc Lehmann <pcg@goof.com> (See also
+    This library was written by Marc Lehmann <schmorp@schmorp.de> (See also
     http://liblzf.plan9.de/).
 
 

@@ -1,4 +1,5 @@
-AC_INIT(lzfP.h)
+AC_INIT
+AC_CONFIG_SRCDIR([lzfP.h])
 
 AC_CONFIG_HEADER(config.h)
 
@@ -19,4 +20,5 @@ else
    AC_MSG_RESULT(no gcc)
 fi
 
-AC_OUTPUT(Makefile)
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT

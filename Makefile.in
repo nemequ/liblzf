@@ -1,4 +1,4 @@
-VERSION = 1.4
+VERSION = 1.401
 
 prefix = @prefix@
 exec_prefix = @exec_prefix@
@@ -47,7 +47,7 @@ install: all
 dist:
 	mkdir liblzf-$(VERSION)
 	cp -Rp LICENSE README Makefile.in config.h.in \
-               configure configure.in install-sh \
+               configure configure.ac install-sh \
                lzf.h lzfP.h lzf_c.c lzf_d.c \
                crc32.h lzf.c Changes \
                liblzf-$(VERSION)
