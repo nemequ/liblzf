@@ -1,7 +1,7 @@
 
 1.401 Thu Mar  3 18:00:52 CET 2005
 	- use cstring in c++, not string.h.
-        - change of contatc address.
+        - change of contact address.
 
 1.4  Wed Dec 15 08:08:49 CET 2004
 	- very very slight tuning of the hashing function.
