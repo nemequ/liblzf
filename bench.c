@@ -34,12 +34,13 @@ int main(void)
    tval si[1000];
    int i, l, j;
    int min = 1<<30;
+   int lp;
 
    FILE *f = fopen ("data", "r");
    fread (data, DSIZE, 1, f);
    fclose (f);
    
-   for(;;) {
+   for (lp = 0; lp < 100; lp++) {
       s=stamp();
       l = lzf_compress (data, DSIZE, data2, DSIZE*2);
       j = lzf_decompress (data2, l, data3, DSIZE*2);
