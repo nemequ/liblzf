@@ -1,6 +1,7 @@
-0.5
+1.0  Sun Nov 17 12:37:37 CET 2002
 	- slightly better compression ratio, almost unmeasurably
           slower.
+        - some documentation fixes.
 
 0.4  Thu Jun 13 14:11:10 CEST 2002
 	- typoe fix.
@@ -11,9 +12,9 @@
 	- fix silly beginners 32/64 bit mistake.
 
 0.2  Thu Jan  4 05:56:42 CET 2001
-	- now totally indepdendent of autoconfig, for
+	- now totally independent of autoconfig, for
           easy inclusion into other programs.
         - much better fine-tuning, faster and better than 0.1.
 
-0.1
+0.1  2000
 	- initial release.

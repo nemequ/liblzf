@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000 Marc Alexander Lehmann <pcg@goof.com>
+ * Copyright (c) 2000-2002 Marc Alexander Lehmann <pcg@goof.com>
  * 
  * Redistribution and use in source and binary forms, with or without modifica-
  * tion, are permitted provided that the following conditions are met:
@@ -33,10 +33,6 @@
 **
 **	lzf -- an extremely fast/free compression/decompression-method
 **	http://liblzf.plan9.de/
-**
-**	Based on ideas by Hermann Vogt, but liblzf is a total
-**	re-implementation of LZV that is not compatible to the
-**	original lzv code.
 **
 **	This algorithm is believed to be patent-free.
 **
