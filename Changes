@@ -1,3 +1,6 @@
+1.4
+	- very very slight tuning of the hashing function.
+
 1.3  Thu Mar 25 15:41:17 CET 2004
 	- changed license of lzf core code to explicitly allow
           relicensing under the GPLv2.

@@ -48,16 +48,18 @@
  */
 #define FRST(p) (((p[0]) << 8) + p[1])
 #define NEXT(v,p) (((v) << 8) + p[2])
-#define IDX(h) ((((h ^ (h << 5)) >> (3*8 - HLOG)) + h*3) & (HSIZE - 1))
+#define IDX(h) ((((h ^ (h << 5)) >> (3*8 - HLOG)) - h*5) & (HSIZE - 1))
 /*
  * IDX works because it is very similar to a multiplicative hash, e.g.
- * (h * 57321 >> (3*8 - HLOG))
+ * ((h * 57321 >> (3*8 - HLOG)) & (HSIZE - 1))
+ * the latter is also quite fast on newer CPUs, and sligthly better
+ *
  * the next one is also quite good, albeit slow ;)
  * (int)(cos(h & 0xffffff) * 1e6)
  */
 
 #if 0
-/* original lzv-like hash function */
+/* original lzv-like hash function, much worse and thus slower */
 # define FRST(p) (p[0] << 5) ^ p[1]
 # define NEXT(v,p) ((v) << 5) ^ p[2]
 # define IDX(h) ((h) & (HSIZE - 1))
