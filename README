@@ -5,10 +5,10 @@ DESCRIPTION
     repetitive data as well. The module is self-contained and very small (no
     large library to be pulled in).
 
-    I have no idea wether any patents in any countries apply to this
-    algorithm, but at the moment it is believed that it is free from any
-    patents. More importantly, it is also free to use in every software
-    package (see COPYING).
+    I do not know for certain wether any patents in any countries apply
+    to this algorithm, but at the moment it is believed that it is free
+    from any patents. More importantly, it is also free to use in every
+    software package (see LICENSE).
 
     See the lzf.h file for details on how the functions in this
     mini-library are to be used.
