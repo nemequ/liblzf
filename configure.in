@@ -14,7 +14,7 @@ AC_CHECK_SIZEOF(long,  4)
 AC_C_CONST
 
 if test "$GCC" = yes; then
-   CFLAGS="$CFLAGS -O2 -funroll-all-loops"
+   CFLAGS="$CFLAGS -O3 -funroll-all-loops"
 else
    AC_MSG_RESULT(no gcc)
 fi

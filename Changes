@@ -1,5 +1,9 @@
-1.1
+1.1  Tue Dec 23 05:48:32 CET 2003
 	- removed #warn directive, it's not worth the hassle.
+        - add LZF_STACK_ARG and AVOID_ERRNO configurations
+          for embedded systems.
+        - make it compile cleanly as c++.
+        - some small documentation and code fixes.
 
 1.0  Sun Nov 17 12:37:37 CET 2002
 	- slightly better compression ratio, almost unmeasurably

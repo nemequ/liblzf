@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2002 Marc Alexander Lehmann <pcg@goof.com>
+ * Copyright (c) 2000-2003 Marc Alexander Lehmann <pcg@goof.com>
  * 
  * Redistribution and use in source and binary forms, with or without modifica-
  * tion, are permitted provided that the following conditions are met:
@@ -68,12 +68,18 @@
 
 unsigned int
 lzf_compress (const void *const in_data, unsigned int in_len,
-	      void *out_data, unsigned int out_len)
+	      void *out_data, unsigned int out_len
+#if !LZF_STATE_ARG
+              , LZF_STATE *htab
+#endif
+              )
 {
-  const u8 *htab[HSIZE];
+#if LZF_STATE_ARG
+  LZF_STATE htab;
+#endif
   const u8 **hslot;
-  const u8 *ip = in_data;
-        u8 *op = out_data;
+  const u8 *ip = (const u8 *)in_data;
+        u8 *op = (u8 *)out_data;
   const u8 *in_end  = ip + in_len;
         u8 *out_end = op + out_len;
   const u8 *ref;

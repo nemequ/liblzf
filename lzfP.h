@@ -82,7 +82,8 @@
 
 /*
  * avoid assigning values to errno variable? for some embedding purposes
- * (linux kernel for example), this is not 
+ * (linux kernel for example), this is neccessary. NOTE: this breaks
+ * the documentation in lzf.h.
  */
 #ifndef AVOID_ERRNO
 # define AVOID_ERRNO 0
@@ -91,6 +92,7 @@
 /*
  * Wether to pass the LZF_STATE variable as argument, or allocate it
  * on the stack. For small-stack environments, define this to zero.
+ * NOTE: this breaks the prototype in lzf.h.
  */
 #ifndef LZF_STATE_ARG
 # define LZF_STATE_ARG 1

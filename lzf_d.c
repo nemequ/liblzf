@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2002 Marc Alexander Lehmann <pcg@goof.com>
+ * Copyright (c) 2000-2003 Marc Alexander Lehmann <pcg@goof.com>
  * 
  * Redistribution and use in source and binary forms, with or without modifica-
  * tion, are permitted provided that the following conditions are met:
@@ -26,16 +26,21 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <errno.h>
-
 #include "lzfP.h"
+
+#if AVOID_ERRNO
+# define SET_ERRNO(n)
+#else
+# include <errno.h>
+# define SET_ERRNO(n) errno = (n)
+#endif
 
 unsigned int 
 lzf_decompress (const void *const in_data,  unsigned int in_len,
                 void             *out_data, unsigned int out_len)
 {
-  u8 const *ip = in_data;
-  u8       *op = out_data;
+  u8 const *ip = (const u8 *)in_data;
+  u8       *op = (u8 *)out_data;
   u8 const *const in_end  = ip + in_len;
   u8       *const out_end = op + out_len;
 
@@ -49,7 +54,7 @@ lzf_decompress (const void *const in_data,  unsigned int in_len,
 
           if (op + ctrl > out_end)
             {
-              errno = E2BIG;
+              SET_ERRNO (E2BIG);
               return 0;
             }
 
@@ -76,13 +81,13 @@ lzf_decompress (const void *const in_data,  unsigned int in_len,
 
           if (op + len + 2 > out_end)
             {
-              errno = E2BIG;
+              SET_ERRNO (E2BIG);
               return 0;
             }
 
           if (ref < (u8 *)out_data)
             {
-              errno = EINVAL;
+              SET_ERRNO (EINVAL);
               return 0;
             }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2002 Marc Alexander Lehmann <pcg@goof.com>
+ * Copyright (c) 2000-2003 Marc Alexander Lehmann <pcg@goof.com>
  * 
  * Redistribution and use in source and binary forms, with or without modifica-
  * tion, are permitted provided that the following conditions are met:
@@ -37,13 +37,15 @@
 
 #include "lzf.h"
 
+typedef unsigned char u8;
+
 static void
 usage (int ec)
 {
   fprintf (stderr, "\n"
-           "lzf, a very leightweight compression/decompression filter\n"
+           "lzf, a very lightweight compression/decompression filter\n"
            "written by Marc Lehmann <pcg@goof.com> You can find more info at\n"
-           "http://liblzv.plan9.de/\n"
+           "http://liblzf.plan9.de/\n"
            "\n"
  	   "USAGE: lzf -c [-b blocksize] | -d\n"
            "          -c  compress\n"
