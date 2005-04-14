@@ -46,9 +46,11 @@
  * the hashing function might seem strange, just believe me
  * it works ;)
  */
-#define FRST(p) (((p[0]) << 8) | p[1])
-#define NEXT(v,p) (((v) << 8) | p[2])
-#define IDX(h) ((((h ^ (h << 5)) >> (3*8 - HLOG)) - h*5) & (HSIZE - 1))
+#ifndef FRST
+# define FRST(p) (((p[0]) << 8) | p[1])
+# define NEXT(v,p) (((v) << 8) | p[2])
+# define IDX(h) ((((h ^ (h << 5)) >> (3*8 - HLOG)) - h*5) & (HSIZE - 1))
+#endif
 /*
  * IDX works because it is very similar to a multiplicative hash, e.g.
  * ((h * 57321 >> (3*8 - HLOG)) & (HSIZE - 1))
@@ -73,8 +75,8 @@
  * compressed format
  *
  * 000LLLLL <L+1>    ; literal
- * LLLOOOOO oooooooo ; backref L
- * 111OOOOO LLLLLLLL oooooooo ; backref L+7
+ * LLLooooo oooooooo ; backref L
+ * 111ooooo LLLLLLLL oooooooo ; backref L+7
  *
  */
 

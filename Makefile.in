@@ -1,4 +1,4 @@
-VERSION = 1.5
+VERSION = 1.51
 
 prefix = @prefix@
 exec_prefix = @exec_prefix@
@@ -46,11 +46,12 @@ install: all
 
 dist:
 	mkdir liblzf-$(VERSION)
-	cp -Rp LICENSE README Makefile.in config.h.in \
-               configure configure.ac install-sh \
-               lzf.h lzfP.h lzf_c.c lzf_d.c \
-               crc32.h lzf.c Changes \
-               liblzf-$(VERSION)
+	tar c LICENSE README Makefile.in config.h.in \
+              configure configure.ac install-sh \
+	      cs/README cs/CLZF.cs \
+              lzf.h lzfP.h lzf_c.c lzf_d.c \
+              crc32.h lzf.c Changes \
+              | tar xpC liblzf-$(VERSION)
 	-chown -R root.root liblzf-$(VERSION)
 	chmod -R u=rwX,go=rX liblzf-$(VERSION)
 	tar cvf - liblzf-$(VERSION) | gzip -9 >liblzf-$(VERSION).tar.gz
