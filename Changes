@@ -1,7 +1,7 @@
 1.51 Thu Apr 14 22:15:46 CEST 2005
 	- incorporated C♯ implementation of both the en- and decoder,
           written by "Oren J. Maurice <oymaurice@hazorea.org.il>".
-          You cna find it in the cs/ subdirectory.
+          You can find it in the cs/ subdirectory.
         - make FRST, NEXT IDX overridable if lzf_c.c is directly included
           in the code.
 
