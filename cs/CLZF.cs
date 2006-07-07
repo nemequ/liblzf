@@ -328,7 +328,7 @@ namespace LZF.NET
 					while ((--len)!=0);
 					}
 				}
-			while (oidx < out_len && iidx < in_len);
+			while (iidx < in_len);
 
 			return (int)oidx;
 		}

@@ -128,7 +128,7 @@
  * (<1% slowdown), but might slow down older cpus considerably.
  */
 #ifndef CHECK_INPUT
-# define CHECK_INPUT 0
+# define CHECK_INPUT 1
 #endif
 
 /*****************************************************************************/

@@ -68,6 +68,14 @@ lzf_decompress (const void *const in_data,  unsigned int in_len,
               return 0;
             }
 
+#if CHECK_INPUT
+          if (ip + ctrl > in_end)
+            {
+              SET_ERRNO (EINVAL);
+              return 0;
+            }
+#endif
+
 #if USE_MEMCPY
           memcpy (op, ip, ctrl);
           op += ctrl;
@@ -84,9 +92,25 @@ lzf_decompress (const void *const in_data,  unsigned int in_len,
 
           u8 *ref = op - ((ctrl & 0x1f) << 8) - 1;
 
+#if CHECK_INPUT
+          if (ip >= in_end)
+            {
+              SET_ERRNO (EINVAL);
+              return 0;
+            }
+#endif
           if (len == 7)
-            len += *ip++;
-          
+            {
+              len += *ip++;
+#if CHECK_INPUT
+              if (ip >= in_end)
+                {
+                  SET_ERRNO (EINVAL);
+                  return 0;
+                }
+#endif
+            }
+
           ref -= *ip++;
 
           if (op + len + 2 > out_end)
@@ -109,7 +133,7 @@ lzf_decompress (const void *const in_data,  unsigned int in_len,
           while (--len);
         }
     }
-  while (op < out_end && ip < in_end);
+  while (ip < in_end);
 
   return op - (u8 *)out_data;
 }

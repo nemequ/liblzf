@@ -6,6 +6,8 @@
           data validity.
         - help applications that do not pass in the correct length
           (such as php) by returning either EINVAL or E2BIG.
+        - default HLOG size is now 15 (cpu caches have increased).
+        - documentation fixes.
 
 1.51 Thu Apr 14 22:15:46 CEST 2005
 	- incorporated C♯ implementation of both the en- and decoder,

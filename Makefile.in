@@ -1,4 +1,4 @@
-VERSION = 1.51
+VERSION = 1.6
 
 prefix = @prefix@
 exec_prefix = @exec_prefix@
