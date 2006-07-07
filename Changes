@@ -1,3 +1,12 @@
+
+1.6  Fri Jul  7 17:31:26 CEST 2006
+	- the lzf example utility will now uncompress if invoked
+          as "unlzf" (patch by Scott Feeney).
+        - add CHECK_INPUT option that adds more checks for input
+          data validity.
+        - help applications that do not pass in the correct length
+          (such as php) by returning either EINVAL or E2BIG.
+
 1.51 Thu Apr 14 22:15:46 CEST 2005
 	- incorporated C♯ implementation of both the en- and decoder,
           written by "Oren J. Maurice <oymaurice@hazorea.org.il>".
