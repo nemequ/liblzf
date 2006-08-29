@@ -1,4 +1,7 @@
 
+	- remove bogus broken horrific "unlzf" patch by Scott Feeney,
+          note to self: never accept well-meant patches.
+
 1.6  Fri Jul  7 17:31:26 CEST 2006
 	- the lzf example utility will now uncompress if invoked
           as "unlzf" (patch by Scott Feeney).

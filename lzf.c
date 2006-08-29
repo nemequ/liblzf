@@ -204,9 +204,6 @@ main (int argc, char *argv[])
   unsigned int blocksize = 64*1024-1;
   enum { m_compress, m_decompress } mode = m_compress;
 
-  if (!strcmp (argv[0] + strlen (argv[0] - 5), "unlzf"))
-    mode = m_decompress;
-
   while ((c = getopt (argc, argv, "cdb:h")) != -1)
     switch (c)
       {
