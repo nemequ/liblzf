@@ -1,5 +1,5 @@
 
-1.7
+1.7  Wed Sep 27 17:29:15 CEST 2006
 	- remove bogus broken horrific "unlzf" patch by Scott Feeney,
           note to self: never accept well-meant patches.
 	- make lzf more robust in presence of padding bytes or sudden eof.
