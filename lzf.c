@@ -71,6 +71,7 @@ usage (int ec)
 /*
  * Anatomy: an lzf file consists of any number of blocks in the following format:
  *
+ * \x00   EOF (optional)
  * "ZV\0" 2-byte-usize <uncompressed data>
  * "ZV\1" 2-byte-csize 2-byte-usize <compressed data>
  * "ZV\2" 4-byte-crc32-0xdebb20e3 (NYI)
@@ -136,7 +137,24 @@ static void decompress (void)
   u8 header[3+2+2];
 
   for(;;) {
-    if (fread (header, 3+2, 1, stdin) != 1)
+    int hdrsize = fread (header, 1, 3+2, stdin);
+
+    /* check for \0 record */
+    if (hdrsize)
+      {
+        if (!header[0])
+          break;
+        else if (hdrsize != 3+2)
+          {
+            if (feof (stdin))
+              fprintf (stderr, "decompress: invalid stream - short header\n");
+            else
+              perror ("decompress");
+
+            exit (1);
+          }
+      }
+    else
       {
         if (feof (stdin))
           break;
