@@ -95,7 +95,8 @@
 
 /*
  * You may choose to pre-set the hash table (might be faster on some
- * modern cpus and large (>>64k) blocks)
+ * modern cpus and large (>>64k) blocks, and also makes compression
+ * deterministic/repeatable when the configuration otherwise is the same).
  */
 #ifndef INIT_HTAB
 # define INIT_HTAB 0
