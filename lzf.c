@@ -125,7 +125,7 @@ static void compress (unsigned int blocksize)
         fwrite (header, 3+2, 1, stdout);
         fwrite (buff1, us, 1, stdout);
       }
-  } while (!feof (stdin));
+  }
 }
 
 static void decompress (void)
