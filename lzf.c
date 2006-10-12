@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2005 Marc Alexander Lehmann <schmorp@schmorp.de>
+ * Copyright (c) 2006      Stefan Traby <stefan@hello-penguin.com>
  * 
  * Redistribution and use in source and binary forms, with or without modifica-
  * tion, are permitted provided that the following conditions are met:
@@ -33,39 +33,131 @@
  * BSD license, indicate your decision by deleting the provisions above and
  * replace them with the notice and other provisions required by the GPL. If
  * you do not delete the provisions above, a recipient may use your version
- * of this file under either the BSD or the GPL.
+ * of this file under either the BSD or the GPL License.
  */
 
 #include "config.h"
-
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <assert.h>
-
+#include <stdlib.h>
 #include <unistd.h>
-#include <getopt.h>
-
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <limits.h>
 #include "lzf.h"
+
+#ifdef HAVE_GETOPT_H
+# include <getopt.h>
+#endif
+
+#define BLOCKSIZE (1024 * 64 - 1)
+#define MAX_BLOCKSIZE BLOCKSIZE
 
 typedef unsigned char u8;
 
+static off_t nr_read, nr_written;
+
+static const char *imagename;
+static enum { compress, uncompress, lzcat } mode = compress;
+static int verbose = 0;
+static int force = 0;
+static long blocksize = BLOCKSIZE;
+
+#ifdef HAVE_GETOPT_LONG
+
+  struct option longopts[] = {
+    {"compress", 0, 0, 'c'},
+    {"decompress", 0, 0, 'd'},
+    {"uncompress", 0, 0, 'd'},
+    {"force", 0, 0, 'f'},
+    {"help", 0, 0, 'h'},
+    {"verbose", 0, 0, 'v'},
+    {"blocksize", 1, 0, 'b'},
+    {0, 0, 0, 0}
+  };
+
+  static const char *opt =
+    "-c --compress    compress\n"
+    "-d --decompress  decompress\n"
+    "-f --force       force overwrite of output file\n"
+    "-h --help        give this help\n" "-v --verbose     verbose mode\n" "-b # --blocksize # set blocksize\n" "\n";
+
+#else
+
+  static const char *opt =
+    "-c   compress\n"
+    "-d   decompress\n"
+    "-f   force overwrite of output file\n"
+    "-h   give this help\n"
+    "-v   verbose mode\n"
+    "-b # set blocksize\n"
+    "\n";
+
+#endif
+
 static void
-usage (int ec)
+usage (int rc)
 {
   fprintf (stderr, "\n"
-           "lzf, a very lightweight compression/decompression filter\n"
-           "written by Marc Lehmann <schmorp@schmorp.de> You can find more info at\n"
+           "lzf, a very lightweight compression/decompression utility written by Stefan Traby.\n"
+           "uses liblzf written by Marc Lehmann <schmorp@schmorp.de> You can find more info at\n"
            "http://liblzf.plan9.de/\n"
            "\n"
- 	   "USAGE: lzf -c [-b blocksize] | -d\n"
-           "          -c  compress\n"
-           "          -d  decompress\n"
-           "          -b  specify the blocksize (default 64k-1)\n"
-           "\n"
-    );
+           "usage: lzf [-dufhvb] [file ...]\n"
+           "       unlzf [file ...]\n"
+           "       lzcat [file ...]\n"
+           "\n%s",
+           opt);
 
-  exit (ec);
+  exit (rc);
+}
+
+static inline ssize_t
+rread (int fd, void *buf, size_t len)
+{
+  ssize_t rc = 0, offset = 0;
+  char *p = buf;
+
+  while (len && (rc = read (fd, &p[offset], len)) > 0)
+    {
+      offset += rc;
+      len -= rc;
+    }
+
+  nr_read += offset;
+
+  if (rc < 0)
+    return rc;
+
+  return offset;
+}
+
+/* returns 0 if all written else -1 */
+static inline ssize_t
+wwrite (int fd, void *buf, size_t len)
+{
+  ssize_t rc;
+  char *b = buf;
+  size_t l = len;
+
+  while (l)
+    {
+      rc = write (fd, b, l);
+      if (rc < 0)
+        {
+          fprintf (stderr, "%s: write error: ", imagename);
+          perror ("");
+          return -1;
+        }
+
+      l -= rc;
+      b += rc;
+    }
+
+  nr_written += len;
+  return 0;
 }
 
 /*
@@ -75,189 +167,359 @@ usage (int ec)
  * "ZV\0" 2-byte-usize <uncompressed data>
  * "ZV\1" 2-byte-csize 2-byte-usize <compressed data>
  * "ZV\2" 4-byte-crc32-0xdebb20e3 (NYI)
- * 
  */
 
-static void compress (unsigned int blocksize)
+
+#define TYPE0_HDR_SIZE 5
+#define TYPE1_HDR_SIZE 7
+#define MAX_HDR_SIZE 7
+#define MIN_HDR_SIZE 5
+
+static int
+compress_fd (int from, int to)
 {
-  ssize_t us;
-  unsigned int cs;
-  u8 buff1[64*1024];
-  u8 buff2[64*1024];
-  u8 header[3+2+2];
+  ssize_t us, cs, len;
+  u8 buf1[MAX_BLOCKSIZE + MAX_HDR_SIZE + 16];
+  u8 buf2[MAX_BLOCKSIZE + MAX_HDR_SIZE + 16];
+  u8 *header;
 
-  header[0] = 'Z';
-  header[1] = 'V';
+  nr_read = nr_written = 0;
+  while ((us = rread (from, &buf1[MAX_HDR_SIZE], blocksize)) > 0)
+    {
+      cs = lzf_compress (&buf1[MAX_HDR_SIZE], us, &buf2[MAX_HDR_SIZE], us > 4 ? us - 4 : us);
+      if (cs)
+        {
+          header = &buf2[MAX_HDR_SIZE - TYPE1_HDR_SIZE];
+          header[0] = 'Z';
+          header[1] = 'V';
+          header[2] = 1;
+          header[3] = cs >> 8;
+          header[4] = cs & 0xff;
+          header[5] = us >> 8;
+          header[6] = us & 0xff;
+          len = cs + TYPE1_HDR_SIZE;
+        }
+      else
+        {                       // write uncompressed
+          header = &buf1[MAX_HDR_SIZE - TYPE0_HDR_SIZE];
+          header[0] = 'Z';
+          header[1] = 'V';
+          header[2] = 0;
+          header[3] = us >> 8;
+          header[4] = us & 0xff;
+          len = us + TYPE0_HDR_SIZE;
+        }
 
-  for(;;) {
-    us = fread (buff1, 1, blocksize, stdin);
+      if (wwrite (to, header, len) == -1)
+        return -1;
+    }
 
-    if (us < blocksize)
-      {
-        if (us == 0)
-          break;
-        else if (!feof (stdin))
-          {
-            perror ("compress");
-            exit (1);
-          }
-      }
-
-    cs = lzf_compress (buff1, us, buff2, us - 4);
-
-    if (cs)
-      {
-        header[2] = 1;
-        header[3] = cs >> 8;
-        header[4] = cs & 0xff;
-        header[5] = us >> 8;
-        header[6] = us & 0xff;
-
-        fwrite (header, 3+2+2, 1, stdout);
-        fwrite (buff2, cs, 1, stdout);
-      }
-    else
-      {
-        header[2] = 0;
-        header[3] = us >> 8;
-        header[4] = us & 0xff;
-
-        fwrite (header, 3+2, 1, stdout);
-        fwrite (buff1, us, 1, stdout);
-      }
-  }
+  return 0;
 }
 
-static void decompress (void)
+static int
+uncompress_fd (int from, int to)
 {
-  ssize_t us;
-  unsigned int cs;
-  u8 buff1[64*1024];
-  u8 buff2[64*1024];
-  u8 header[3+2+2];
+  u8 header[MAX_HDR_SIZE];
+  u8 buf1[MAX_BLOCKSIZE + MAX_HDR_SIZE + 16];
+  u8 buf2[MAX_BLOCKSIZE + MAX_HDR_SIZE + 16];
+  u8 *p;
+  int l, rd;
+  ssize_t rc, cs, us, bytes, over = 0;
 
-  for(;;) {
-    int hdrsize = fread (header, 1, 3+2, stdin);
+  nr_read = nr_written = 0;
+  while (1)
+    {
+      rc = rread (from, header + over, MAX_HDR_SIZE - over);
+      if (rc < 0)
+        {
+          fprintf (stderr, "%s: read error: ", imagename);
+          perror ("");
+          return -1;
+        }
 
-    /* check for \0 record */
-    if (hdrsize)
-      {
-        if (!header[0])
-          break;
-        else if (hdrsize != 3+2)
-          {
-            if (feof (stdin))
-              fprintf (stderr, "decompress: invalid stream - short header\n");
-            else
-              perror ("decompress");
+      rc += over;
+      over = 0;
+      if (!rc || header[0] == 0)
+        return 0;
 
-            exit (1);
-          }
-      }
-    else
-      {
-        if (feof (stdin))
-          break;
-        else
-          {
-            perror ("decompress");
-            exit (1);
-          }
-      }
+      if (rc < MIN_HDR_SIZE || header[0] != 'Z' || header[1] != 'V')
+        {
+          fprintf (stderr, "%s: invalid data stream - magic not found or short header\n", imagename);
+          return -1;
+        }
 
-    if (header[0] != 'Z' || header[1] != 'V')
-      {
-        fprintf (stderr, "decompress: invalid stream - no magic number found\n");
-        exit (1);
-      }
+      switch (header[2])
+        {
+          case 0:
+            cs = -1;
+            us = (header[3] << 8) | header[4];
+            p = &header[TYPE0_HDR_SIZE];
+            break;
+          case 1:
+            if (rc < TYPE1_HDR_SIZE)
+              {
+                goto short_read;
+              }
+            cs = (header[3] << 8) | header[4];
+            us = (header[5] << 8) | header[6];
+            p = &header[TYPE1_HDR_SIZE];
+            break;
+          default:
+            fprintf (stderr, "%s: unknown blocktype\n", imagename);
+            return -1;
+        }
 
-    cs = (header[3] << 8) | header[4];
+      bytes = cs == -1 ? us : cs;
+      l = &header[rc] - p;
 
-    if (header[2] == 1)
-      {
-        if (fread (header+3+2, 2, 1, stdin) != 1)
-          {
-            perror ("decompress");
-            exit (1);
-          }
+      if (l > 0)
+        memcpy (buf1, p, l);
 
-        us = (header[5] << 8) | header[6];
+      if (l > bytes)
+        {
+          over = l - bytes;
+          memmove (header, &p[bytes], over);
+        }
 
-        if (fread (buff1, cs, 1, stdin) != 1)
-          {
-            perror ("decompress");
-            exit (1);
-          }
+      p = &buf1[l];
+      rd = bytes - l;
+      if (rd > 0)
+        if ((rc = rread (from, p, rd)) != rd)
+          goto short_read;
 
-        if (lzf_decompress (buff1, cs, buff2, us) != us)
-          {
-            fprintf (stderr, "decompress: invalid stream - data corrupted\n");
-            exit (1);
-          }
+      if (cs == -1)
+        {
+          if (wwrite (to, buf1, us))
+            return -1;
+        }
+      else
+        {
+          if (lzf_decompress (buf1, cs, buf2, us) != us)
+            {
+              fprintf (stderr, "%s: decompress: invalid stream - data corrupted\n", imagename);
+              return -1;
+            }
 
-        fwrite (buff2, us, 1, stdout);
-      }
-    else if (header[2] == 0)
-      {
-        if (fread (buff2, cs, 1, stdin) != 1)
-          {
-            perror ("decompress");
-            exit (1);
-          }
+          if (wwrite (to, buf2, us))
+            return -1;
+        }
+    }
 
-        fwrite (buff2, cs, 1, stdout);
-      }
-    else
-      {
-        fprintf (stderr, "decompress: invalid stream - unknown block type\n");
-        exit (1);
-      }
-  }
+  return 0;
+
+short_read:
+  fprintf (stderr, "%s: short data\n", imagename);
+  return -1;
+}
+
+static int
+open_out (const char *name)
+{
+  int fd;
+  int m = O_EXCL;
+
+  if (force)
+    m = 0;
+
+  fd = open (name, O_CREAT | O_WRONLY | O_TRUNC | m, 600);
+  return fd;
+}
+
+static int
+compose_name (const char *fname, char *oname)
+{
+  char *p;
+
+  if (mode == compress)
+    {
+      if (strlen (fname) > PATH_MAX - 4)
+        {
+          fprintf (stderr, "%s: %s.lzf: name too long", imagename, fname);
+          return -1;
+        }
+
+      strcpy (oname, fname);
+      strcat (oname, ".lzf");
+    }
+  else
+    {
+      if (strlen (fname) > PATH_MAX)
+        {
+          fprintf (stderr, "%s: %s: name too long\n", imagename, fname);
+          return -1;
+        }
+
+      strcpy (oname, fname);
+      p = &oname[strlen (oname)] - 4;
+      if (p < oname || strcmp (p, ".lzf"))
+        {
+          fprintf (stderr, "%s: %s: unknown suffix\n", imagename, fname);
+          return -1;
+        }
+
+      *p = 0;
+    }
+
+  return 0;
+}
+
+static int
+run_file (const char *fname)
+{
+  int fd, fd2;
+  int rc;
+  struct stat mystat;
+  char oname[PATH_MAX + 1];
+
+  if (mode != lzcat)
+    if (compose_name (fname, oname))
+      return -1;
+
+  rc = lstat (fname, &mystat);
+  fd = open (fname, O_RDONLY);
+  if (rc || fd == -1)
+    {
+      fprintf (stderr, "%s: %s: ", imagename, fname);
+      perror ("");
+      return -1;
+    }
+
+  if (!S_ISREG (mystat.st_mode))
+    {
+      fprintf (stderr, "%s: %s: not a regular file.\n", imagename, fname);
+      close (fd);
+      return -1;
+    }
+
+  if (mode == lzcat)
+    {
+      rc = uncompress_fd (fd, 1);
+      close (fd);
+      return rc;
+    }
+
+  fd2 = open_out (oname);
+  if (fd2 == -1)
+    {
+      fprintf (stderr, "%s: %s: ", imagename, oname);
+      perror ("");
+      close (fd);
+      return -1;
+    }
+
+  if (mode == compress)
+    {
+      rc = compress_fd (fd, fd2);
+      if (!rc && verbose)
+        fprintf (stderr, "%s:  %5.1f%% -- replaced with %s\n",
+                 fname, nr_read == 0 ? 0 : 100.0 - nr_written / ((double) nr_read / 100.0), oname);
+    }
+  else
+    {
+      rc = uncompress_fd (fd, fd2);
+      if (!rc && verbose)
+        fprintf (stderr, "%s:  %5.1f%% -- replaced with %s\n",
+                 fname, nr_written == 0 ? 0 : 100.0 - nr_read / ((double) nr_written / 100.0), oname);
+    }
+
+  fchmod (fd2, mystat.st_mode);
+  close (fd);
+  close (fd2);
+
+  if (!rc)
+    unlink (fname);
+
+  return rc;
 }
 
 int
 main (int argc, char *argv[])
 {
-  int c;
-  unsigned int blocksize = 64*1024-1;
-  enum { m_compress, m_decompress } mode = m_compress;
+  char *p = argv[0];
+  int optc;
+  int rc = 0;
 
-  while ((c = getopt (argc, argv, "cdb:h")) != -1)
-    switch (c)
-      {
-      case 'c':
-        mode = m_compress;
-        break;
+  errno = 0;
+  p = getenv ("LZF_BLOCKSIZE");
+  if (p)
+    {
+      blocksize = strtoul (p, 0, 0);
+      if (errno || !blocksize || blocksize > MAX_BLOCKSIZE)
+        blocksize = BLOCKSIZE;
+    }
 
-      case 'd':
-        mode = m_decompress;
-        break;
+  p = strrchr (argv[0], '/');
+  imagename = p ? ++p : argv[0];
 
-      case 'b':
-        blocksize = atol (optarg);
-        break;
+  if (!strncmp (imagename, "un", 2) || !strncmp (imagename, "de", 2))
+    mode = uncompress;
 
-      case 'h':
-        usage (0);
+  if (strstr (imagename, "cat"))
+    mode = lzcat;
 
-      case ':':
-        fprintf (stderr, "required argument missing, use -h\n");
-        exit (1);
+#ifdef HAVE_GETOPT_LONG
+  while ((optc = getopt_long (argc, argv, "cdfhvb:", longopts, 0)) != -1)
+#else
+  while ((optc = getopt (argc, argv, "cdfhvb:")) != -1)
+#endif
+    {
+      switch (optc)
+        {
+          case 'c':
+            mode = compress;
+            break;
+          case 'd':
+            mode = uncompress;
+            break;
+          case 'f':
+            force = 1;
+            break;
+          case 'h':
+            usage (0);
+            break;
+          case 'v':
+            verbose = 1;
+            break;
+          case 'b':
+            errno = 0;
+            blocksize = strtoul (optarg, 0, 0);
+            if (errno || !blocksize || blocksize > MAX_BLOCKSIZE)
+              blocksize = BLOCKSIZE;
+            break;
+          default:
+            usage (1);
+            break;
+        }
+    }
 
-      case '?':
-        fprintf (stderr, "unknown option, use -h\n");
-        exit (1);
+  if (optind == argc)
+    {                           // stdin stdout
+      if (!force)
+        {
+          if ((mode == uncompress || mode == lzcat) && isatty (0))
+            {
+              fprintf (stderr, "%s: compressed data not read from a terminal. Use -f to force decompression.\n", imagename);
+              exit (1);
+            }
+          if (mode == compress && isatty (1))
+            {
+              fprintf (stderr, "%s: compressed data not written to a terminal. Use -f to force compression.\n", imagename);
+              exit (1);
+            }
+        }
 
-      default:
-        usage (1);
-      }
+      if (mode == compress)
+        rc = compress_fd (0, 1);
+      else
+        rc = uncompress_fd (0, 1);
 
-  if (mode == m_compress)
-    compress (blocksize);
-  else if (mode == m_decompress)
-    decompress ();
-  else
-    abort ();
+      exit (rc ? 1 : 0);
+    }
 
-  return 0;
+  while (optind < argc)
+    rc |= run_file (argv[optind++]);
+
+  exit (rc ? 1 : 0);
 }
+

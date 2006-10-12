@@ -1,5 +1,7 @@
 
-	- remove bogus while after for { }, reported by oesi.
+	- replaced lzf demo by industrial-strength lzf utility with behaviour
+          similar other compression utilities. Thanks for Stefan Traby for
+          rewriting it!
 
 1.7  Wed Sep 27 17:29:15 CEST 2006
 	- remove bogus broken horrific "unlzf" patch by Scott Feeney,
