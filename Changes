@@ -1,4 +1,5 @@
 
+2.0
 	- replaced lzf demo by industrial-strength lzf utility with behaviour
           similar other compression utilities. Thanks for Stefan Traby for
           rewriting it!
