@@ -50,11 +50,12 @@
 # define FRST(p) (((p[0]) << 8) | p[1])
 # define NEXT(v,p) (((v) << 8) | p[2])
 # define IDX(h) ((((h ^ (h << 5)) >> (3*8 - HLOG)) - h*5) & (HSIZE - 1))
+//# define IDX(h) ((ip[0] * 121 ^ ip[1] * 33 ^ ip[2] * 1) & (HSIZE-1))
 #endif
 /*
  * IDX works because it is very similar to a multiplicative hash, e.g.
  * ((h * 57321 >> (3*8 - HLOG)) & (HSIZE - 1))
- * the latter is also quite fast on newer CPUs, and sligthly better
+ * the latter is also quite fast on newer CPUs, and compresses similarly.
  *
  * the next one is also quite good, albeit slow ;)
  * (int)(cos(h & 0xffffff) * 1e6)
@@ -69,7 +70,7 @@
 
 #define        MAX_LIT        (1 <<  5)
 #define        MAX_OFF        (1 << 13)
-#define        MAX_REF        ((1 <<  8) + (1 << 3))
+#define        MAX_REF        ((1 << 8) + (1 << 3))
 
 /*
  * compressed format
