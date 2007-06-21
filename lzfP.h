@@ -86,14 +86,6 @@
 #endif
 
 /*
- * Use string functions to copy memory.
- * this is usually a loss, even with glibc's optimized memcpy
- */
-#ifndef USE_MEMCPY
-# define USE_MEMCPY 0
-#endif
-
-/*
  * You may choose to pre-set the hash table (might be faster on some
  * modern cpus and large (>>64k) blocks, and also makes compression
  * deterministic/repeatable when the configuration otherwise is the same).
@@ -158,7 +150,7 @@ typedef const u8 *LZF_STATE[1 << (HLOG)];
 # endif
 #endif
 
-#if USE_MEMCPY || INIT_HTAB
+#if INIT_HTAB
 # ifdef __cplusplus
 #  include <cstring>
 # else

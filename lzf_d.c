@@ -45,6 +45,13 @@
 # define SET_ERRNO(n) errno = (n)
 #endif
 
+#if (__i386 || __amd64) && __GNUC__ >= 3
+# define lzf_movsb(dst, src, len)                \
+   asm ("rep movsb"                              \
+        : "=D" (dst), "=S" (src), "=c" (len)     \
+        :  "0" (dst),  "1" (src),  "2" (len));
+#endif
+
 unsigned int 
 lzf_decompress (const void *const in_data,  unsigned int in_len,
                 void             *out_data, unsigned int out_len)
@@ -76,10 +83,8 @@ lzf_decompress (const void *const in_data,  unsigned int in_len,
             }
 #endif
 
-#if USE_MEMCPY
-          memcpy (op, ip, ctrl);
-          op += ctrl;
-          ip += ctrl;
+#ifdef lzf_movsb
+          lzf_movsb (op, ip, ctrl);
 #else
           do
             *op++ = *ip++;
@@ -125,12 +130,17 @@ lzf_decompress (const void *const in_data,  unsigned int in_len,
               return 0;
             }
 
+#ifdef lzf_movsb
+          len += 2;
+          lzf_movsb (op, ref, len);
+#else
           *op++ = *ref++;
           *op++ = *ref++;
 
           do
             *op++ = *ref++;
           while (--len);
+#endif
         }
     }
   while (ip < in_end);

@@ -72,6 +72,13 @@
 #define        MAX_OFF        (1 << 13)
 #define        MAX_REF        ((1 << 8) + (1 << 3))
 
+#if (__i386 || __amd64) && __GNUC__ >= 3
+# define lzf_movsb(dst, src, len)                \
+   asm ("rep movsb"                              \
+        : "=D" (dst), "=S" (src), "=c" (len)     \
+        :  "0" (dst),  "1" (src),  "2" (len));
+#endif
+
 /*
  * compressed format
  *
@@ -104,11 +111,10 @@ lzf_compress (const void *const in_data, unsigned int in_len,
            int lit = 0;
 
 #if INIT_HTAB
-# if USE_MEMCPY
-    memset (htab, 0, sizeof (htab));
-# else
-    for (hslot = htab; hslot < htab + HSIZE; hslot++)
-      *hslot++ = ip;
+  memset (htab, 0, sizeof (htab));
+# if 0
+  for (hslot = htab; hslot < htab + HSIZE; hslot++)
+    *hslot++ = ip;
 # endif
 #endif
 
@@ -214,10 +220,10 @@ lzf_compress (const void *const in_data, unsigned int in_len,
             return 0;
 
           *op++ = MAX_LIT - 1;
-#if USE_MEMCPY
-          memcpy (op, ip - MAX_LIT, MAX_LIT);
-          op += MAX_LIT;
-          lit = 0;
+
+#ifdef lzf_movsb
+          ip -= lit;
+          lzf_movsb (op, ip, lit);
 #else
           lit = -lit;
           do
@@ -233,11 +239,17 @@ lzf_compress (const void *const in_data, unsigned int in_len,
 	return 0;
 
       *op++ = lit - 1;
+#ifdef lzf_movsb
+      ip -= lit;
+      lzf_movsb (op, ip, lit);
+#else
       lit = -lit;
       do
 	*op++ = ip[lit];
       while (++lit);
+#endif
     }
 
   return op - (u8 *) out_data;
 }
+
