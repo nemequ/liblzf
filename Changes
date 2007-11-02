@@ -1,4 +1,4 @@
-2.1
+2.1  Fri Nov  2 13:34:42 CET 2007
 	- get rid of memcpy.
         - tentatively use rep movsb on x86 and x86_64 (gcc only) for a
           moderate speed improvement.
