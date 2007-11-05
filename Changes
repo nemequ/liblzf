@@ -1,3 +1,5 @@
+	- switched to GPL v2 or any later version.
+
 2.1  Fri Nov  2 13:34:42 CET 2007
 	- switched to a 2-clause bsd license with GPL exception.
 	- get rid of memcpy.
