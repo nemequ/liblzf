@@ -160,10 +160,6 @@ lzf_compress (const void *const in_data, unsigned int in_len,
               if (expect_false (op + lit + 1 + 3 >= out_end))
                 return 0;
 
-              do
-                len++;
-              while (len < maxlen && ref[len] == ip[len]);
-
               if (lit)
                 {
                   *op++ = lit - 1;
@@ -171,6 +167,27 @@ lzf_compress (const void *const in_data, unsigned int in_len,
                   do
                     *op++ = ip[lit];
                   while (++lit);
+                }
+
+              for (;;)
+                {
+                  if (expect_true (ip < in_end - 2 - 8 && maxlen > 8))
+                    {
+                      len++; if (ref [len] != ip [len]) break;
+                      len++; if (ref [len] != ip [len]) break;
+                      len++; if (ref [len] != ip [len]) break;
+                      len++; if (ref [len] != ip [len]) break;
+                      len++; if (ref [len] != ip [len]) break;
+                      len++; if (ref [len] != ip [len]) break;
+                      len++; if (ref [len] != ip [len]) break;
+                      len++; if (ref [len] != ip [len]) break;
+                    }
+
+                  do
+                    len++;
+                  while (len < maxlen && ref[len] == ip[len]);
+
+                  break;
                 }
 
               len -= 2;
