@@ -1,15 +1,15 @@
 2.2
-	- switched to GPL v2 or any later version.
+	- switched to 2-clause bsd with "GPL v2 or any later version" option.
         - speed up compression by ~10-15% in common cases
           by some manual unrolling.
-        - import some compiler tricks from JSON::XS.
+        - import some compiler tricks from JSON::XS, for further speed-ups.
         - tune hash functions depending on ULTRA_FAST or VERY_FAST settings.
         - for typical binary data (e.g. /bin/bash, memory dumps,
           canterbury corpus etc.), speed is now comparable to fastlz, but
           with better compression ratio. with ULTRA_FAST, it's typically
           3-15% faster than fastlz while still maintaining a similar ratio.
           (amd64 and core 2 duo, ymmv). thanks a lot for the competition :)
-        - undo inline assembly, it is no longer helpful.
+        - undo inline assembly in compressor, it is no longer helpful.
         - no changes to the decompressor.
         - use a HLOG of 16 by default now (formerly 15).
 

@@ -42,11 +42,11 @@ int main(void)
    fclose (f);
    
    for (lp = 0; lp < 1000; lp++) {
-      l = lzf_compress (data, DSIZE, data2, DSIZE*2);
       s=stamp();
+      l = lzf_compress (data, DSIZE, data2, DSIZE*2);
       //l = fastlz_compress_level (1, data, DSIZE, data2);
-      j = lzf_decompress (data2, l, data3, DSIZE*2);
       si[0]=measure(s);
+      j = lzf_decompress (data2, l, data3, DSIZE*2);
 
       printf ("\r%10d (%d) ", si[0], l);
       if (si[0] < min && si[0] > 0)
