@@ -143,7 +143,6 @@ lzf_compress (const void *const in_data, unsigned int in_len,
               && ip + 4 < in_end
               && ref > (u8 *)in_data
 #if STRICT_ALIGN
-              x x x
               && ref[0] == ip[0]
               && ref[1] == ip[1]
               && ref[2] == ip[2]
