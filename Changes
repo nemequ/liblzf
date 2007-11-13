@@ -10,6 +10,7 @@
           3-15% faster than fastlz while still maintaining a similar ratio.
           (amd64 and core 2 duo, ymmv). thanks a lot for the competition :)
         - undo inline assembly, it is no longer helpful.
+        - no changes to the decompressor.
 
 2.1  Fri Nov  2 13:34:42 CET 2007
 	- switched to a 2-clause bsd license with GPL exception.

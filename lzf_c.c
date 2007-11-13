@@ -256,7 +256,7 @@ lzf_compress (const void *const in_data, unsigned int in_len,
         }
     }
 
-  if (op + lit + 2 >= out_end)
+  if (op + 2 >= out_end)
     return 0;
 
   while (ip < in_end)
@@ -265,7 +265,8 @@ lzf_compress (const void *const in_data, unsigned int in_len,
       *op++ = *ip++;
     }
 
-  op [- lit - 1] = lit - 1;
+  op [- lit - 1] = lit - 1; /* end run */
+  op -= !lit; /* undo run if length is zero */
 
   return op - (u8 *)out_data;
 }
