@@ -47,7 +47,13 @@
 #ifndef FRST
 # define FRST(p) (((p[0]) << 8) | p[1])
 # define NEXT(v,p) (((v) << 8) | p[2])
-# define IDX(h) ((((h ^ (h << 5)) >> (3*8 - HLOG)) - h*5) & (HSIZE - 1))
+# if ULTRA_FAST
+#  define IDX(h) (((h >> (3*8 - HLOG)) - h  ) & (HSIZE - 1))
+# elif VERY_FAST
+#  define IDX(h) (((h >> (3*8 - HLOG)) - h*5) & (HSIZE - 1))
+# else
+#  define IDX(h) ((((h ^ (h << 5)) >> (3*8 - HLOG)) - h*5) & (HSIZE - 1))
+# endif
 /*# define IDX(h) ((ip[0] * 121 ^ ip[1] * 33 ^ ip[2] * 1) & (HSIZE-1))*/
 #endif
 /*
@@ -69,13 +75,6 @@
 #define        MAX_LIT        (1 <<  5)
 #define        MAX_OFF        (1 << 13)
 #define        MAX_REF        ((1 << 8) + (1 << 3))
-
-#if (__i386 || __amd64) && __GNUC__ >= 3
-# define lzf_movsb(dst, src, len)                \
-   asm ("rep movsb"                              \
-        : "=D" (dst), "=S" (src), "=c" (len)     \
-        :  "0" (dst),  "1" (src),  "2" (len));
-#endif
 
 #if __GNUC__ >= 3
 # define expect(expr,value)         __builtin_expect ((expr),(value))
@@ -115,9 +114,12 @@ lzf_compress (const void *const in_data, unsigned int in_len,
         u8 *out_end = op + out_len;
   const u8 *ref;
 
-  unsigned int hval = FRST (ip);
+  unsigned int hval;
   unsigned long off;
-           int lit = 0;
+  int lit;
+
+  if (!in_len || !out_len)
+    return 0;
 
 #if INIT_HTAB
   memset (htab, 0, sizeof (htab));
@@ -127,163 +129,145 @@ lzf_compress (const void *const in_data, unsigned int in_len,
 # endif
 #endif
 
-  for (;;)
+  lit = 0; op++; /* start run */
+
+  hval = FRST (ip);
+  while (ip < in_end - 2)
     {
-      if (expect_true (ip < in_end - 2))
-        {
-          hval = NEXT (hval, ip);
-          hslot = htab + IDX (hval);
-          ref = *hslot; *hslot = ip;
+      hval = NEXT (hval, ip);
+      hslot = htab + IDX (hval);
+      ref = *hslot; *hslot = ip;
 
-          if (1
+      if (1
 #if INIT_HTAB && !USE_MEMCPY
-              && ref < ip /* the next test will actually take care of this, but this is faster */
+          && ref < ip /* the next test will actually take care of this, but this is faster */
 #endif
-              && (off = ip - ref - 1) < MAX_OFF
-              && ip + 4 < in_end
-              && ref > (u8 *)in_data
+          && (off = ip - ref - 1) < MAX_OFF
+          && ip + 4 < in_end
+          && ref > (u8 *)in_data
 #if STRICT_ALIGN
-              && ref[0] == ip[0]
-              && ref[1] == ip[1]
-              && ref[2] == ip[2]
+          && ref[0] == ip[0]
+          && ref[1] == ip[1]
+          && ref[2] == ip[2]
 #else
-              && *(u16 *)ref == *(u16 *)ip
-              && ref[2] == ip[2]
+          && *(u16 *)ref == *(u16 *)ip
+          && ref[2] == ip[2]
 #endif
-            )
+        )
+        {
+          /* match found at *ref++ */
+          unsigned int len = 2;
+          unsigned int maxlen = in_end - ip - len;
+          maxlen = maxlen > MAX_REF ? MAX_REF : maxlen;
+
+          if (expect_false (op + 1 + 3 >= out_end))
+            return 0;
+
+          op [- lit - 1] = lit - 1; /* stop run */
+          op -= !lit; /* undo run if length is zero */
+
+          for (;;)
             {
-              /* match found at *ref++ */
-              unsigned int len = 2;
-              unsigned int maxlen = in_end - ip - len;
-              maxlen = maxlen > MAX_REF ? MAX_REF : maxlen;
-
-              if (expect_false (op + lit + 1 + 3 >= out_end))
-                return 0;
-
-              if (expect_false (lit))
+              if (expect_true (maxlen > 16))
                 {
-                  *op++ = lit - 1;
-                  lit = -lit;
-                  do
-                    *op++ = ip[lit];
-                  while (expect_false (++lit));
+                  len++; if (ref [len] != ip [len]) break;
+                  len++; if (ref [len] != ip [len]) break;
+                  len++; if (ref [len] != ip [len]) break;
+                  len++; if (ref [len] != ip [len]) break;
+
+                  len++; if (ref [len] != ip [len]) break;
+                  len++; if (ref [len] != ip [len]) break;
+                  len++; if (ref [len] != ip [len]) break;
+                  len++; if (ref [len] != ip [len]) break;
+
+                  len++; if (ref [len] != ip [len]) break;
+                  len++; if (ref [len] != ip [len]) break;
+                  len++; if (ref [len] != ip [len]) break;
+                  len++; if (ref [len] != ip [len]) break;
+
+                  len++; if (ref [len] != ip [len]) break;
+                  len++; if (ref [len] != ip [len]) break;
+                  len++; if (ref [len] != ip [len]) break;
+                  len++; if (ref [len] != ip [len]) break;
                 }
 
-              for (;;)
-                {
-                  if (expect_true (maxlen > 16))
-                    {
-                      len++; if (ref [len] != ip [len]) break;
-                      len++; if (ref [len] != ip [len]) break;
-                      len++; if (ref [len] != ip [len]) break;
-                      len++; if (ref [len] != ip [len]) break;
-                      len++; if (ref [len] != ip [len]) break;
-                      len++; if (ref [len] != ip [len]) break;
-                      len++; if (ref [len] != ip [len]) break;
-                      len++; if (ref [len] != ip [len]) break;
-                      len++; if (ref [len] != ip [len]) break;
-                      len++; if (ref [len] != ip [len]) break;
-                      len++; if (ref [len] != ip [len]) break;
-                      len++; if (ref [len] != ip [len]) break;
-                      len++; if (ref [len] != ip [len]) break;
-                      len++; if (ref [len] != ip [len]) break;
-                      len++; if (ref [len] != ip [len]) break;
-                      len++; if (ref [len] != ip [len]) break;
-                    }
+              do
+                len++;
+              while (len < maxlen && ref[len] == ip[len]);
 
-                  do
-                    len++;
-                  while (len < maxlen && ref[len] == ip[len]);
+              break;
+            }
 
-                  break;
-                }
+          len -= 2;
+          ip++;
 
-              len -= 2;
-              ip++;
+          if (len < 7)
+            {
+              *op++ = (off >> 8) + (len << 5);
+            }
+          else
+            {
+              *op++ = (off >> 8) + (  7 << 5);
+              *op++ = len - 7;
+            }
 
-              if (len < 7)
-                {
-                  *op++ = (off >> 8) + (len << 5);
-                }
-              else
-                {
-                  *op++ = (off >> 8) + (  7 << 5);
-                  *op++ = len - 7;
-                }
-
-              *op++ = off;
+          *op++ = off;
 
 #if ULTRA_FAST || VERY_FAST
-              ip += len;
+          ip += len;
 #if VERY_FAST && !ULTRA_FAST
-              --ip;
+          --ip;
 #endif
-              hval = FRST (ip);
+          hval = FRST (ip);
 
-              hval = NEXT (hval, ip);
-              htab[IDX (hval)] = ip;
-              ip++;
+          hval = NEXT (hval, ip);
+          htab[IDX (hval)] = ip;
+          ip++;
 
 #if VERY_FAST && !ULTRA_FAST
-              hval = NEXT (hval, ip);
-              htab[IDX (hval)] = ip;
-              ip++;
+          hval = NEXT (hval, ip);
+          htab[IDX (hval)] = ip;
+          ip++;
 #endif
 #else
-              do
-                {
-                  hval = NEXT (hval, ip);
-                  htab[IDX (hval)] = ip;
-                  ip++;
-                }
-              while (len--);
-#endif
-              continue;
+          do
+            {
+              hval = NEXT (hval, ip);
+              htab[IDX (hval)] = ip;
+              ip++;
             }
+          while (len--);
+#endif
+          lit = 0; op++; /* start run */
+          continue;
         }
-      else if (expect_false (ip == in_end))
-        break;
 
       /* one more literal byte we must copy */
+
+      if (expect_false (op >= out_end))
+        return 0;
+
       lit++;
-      ip++;
+      *op++ = *ip++;
 
       if (expect_false (lit == MAX_LIT))
         {
-          if (op + 1 + MAX_LIT >= out_end)
-            return 0;
-
-          *op++ = MAX_LIT - 1;
-
-#ifdef lzf_movsb
-          ip -= MAX_LIT;
-          lzf_movsb (op, ip, lit);
-#else
-          lit = -lit;
-          do
-            *op++ = ip[lit];
-          while (++lit);
-#endif
+          op [- lit - 1] = lit - 1; /* stop run */
+          lit = 0; op++; /* start run */
         }
     }
 
-  if (lit)
-    {
-      if (op + lit + 1 >= out_end)
-	return 0;
+  if (op + lit + 2 >= out_end)
+    return 0;
 
-      *op++ = lit - 1;
-#ifdef lzf_movsb
-      ip -= lit;
-      lzf_movsb (op, ip, lit);
-#else
-      lit = -lit;
-      do
-	*op++ = ip[lit];
-      while (++lit);
-#endif
+  while (ip < in_end)
+    {
+      lit++;
+      *op++ = *ip++;
     }
 
-  return op - (u8 *) out_data;
+  op [- lit - 1] = lit - 1;
+
+  return op - (u8 *)out_data;
 }
 

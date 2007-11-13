@@ -1,4 +1,14 @@
 	- switched to GPL v2 or any later version.
+        - speed up compression by ~10-15% in common cases
+          by some manual unrolling.
+        - import some compiler tricks from JSON::XS.
+        - tune hash functions depending on ULTRA_FAST or VERY_FAST settings.
+        - for typical binary data (e.g. /bin/bash, memory dumps,
+          canterbury corpus etc.), speed is now comparable to fastlz, but
+          with better compression ratio. with ULTRA_FAST, it's typically
+          3-8% faster than fastlz while still maintaining a similar ratio.
+          (amd64, ymmv). thanks a lot for the competition :)
+        - undo inline assembly, it is no longer helpful.
 
 2.1  Fri Nov  2 13:34:42 CET 2007
 	- switched to a 2-clause bsd license with GPL exception.

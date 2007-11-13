@@ -60,7 +60,7 @@
  * the data uncompressed otherwise.
  *
  * lzf_compress might use different algorithms on different systems and
- * even diferent runs, thus might result in different compressed strings
+ * even different runs, thus might result in different compressed strings
  * depending on the phase of the moon or similar factors. However, all
  * these strings are architecture-independent and will result in the
  * original data when decompressed using lzf_decompress.

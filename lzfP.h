@@ -58,9 +58,8 @@
 /*
  * Sacrifice very little compression quality in favour of compression speed.
  * This gives almost the same compression as the default code, and is
- * (very roughly) 15% faster. This is the preferable mode of operation.
+ * (very roughly) 15% faster. This is the preferred mode of operation.
  */
-
 #ifndef VERY_FAST
 # define VERY_FAST 1
 #endif
