@@ -77,6 +77,17 @@
         :  "0" (dst),  "1" (src),  "2" (len));
 #endif
 
+#if __GNUC__ >= 3
+# define expect(expr,value)         __builtin_expect ((expr),(value))
+# define inline                     inline
+#else
+# define expect(expr,value)         (expr)
+# define inline                     static
+#endif
+
+#define expect_false(expr) expect ((expr) != 0, 0)
+#define expect_true(expr)  expect ((expr) != 0, 1)
+
 /*
  * compressed format
  *
@@ -118,7 +129,7 @@ lzf_compress (const void *const in_data, unsigned int in_len,
 
   for (;;)
     {
-      if (ip < in_end - 2)
+      if (expect_true (ip < in_end - 2))
         {
           hval = NEXT (hval, ip);
           hslot = htab + IDX (hval);
@@ -146,7 +157,7 @@ lzf_compress (const void *const in_data, unsigned int in_len,
               unsigned int maxlen = in_end - ip - len;
               maxlen = maxlen > MAX_REF ? MAX_REF : maxlen;
 
-              if (op + lit + 1 + 3 >= out_end)
+              if (expect_false (op + lit + 1 + 3 >= out_end))
                 return 0;
 
               do
@@ -205,14 +216,14 @@ lzf_compress (const void *const in_data, unsigned int in_len,
               continue;
             }
         }
-      else if (ip == in_end)
+      else if (expect_false (ip == in_end))
         break;
 
       /* one more literal byte we must copy */
       lit++;
       ip++;
 
-      if (lit == MAX_LIT)
+      if (expect_false (lit == MAX_LIT))
         {
           if (op + 1 + MAX_LIT >= out_end)
             return 0;
