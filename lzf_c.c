@@ -159,11 +159,11 @@ lzf_compress (const void *const in_data, unsigned int in_len,
           unsigned int maxlen = in_end - ip - len;
           maxlen = maxlen > MAX_REF ? MAX_REF : maxlen;
 
-          if (expect_false (op + 1 + 3 >= out_end))
-            return 0;
-
           op [- lit - 1] = lit - 1; /* stop run */
           op -= !lit; /* undo run if length is zero */
+
+          if (expect_false (op + 3 + 1 >= out_end))
+            return 0;
 
           for (;;)
             {
