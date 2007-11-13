@@ -237,32 +237,31 @@ lzf_compress (const void *const in_data, unsigned int in_len,
             }
           while (len--);
 #endif
+
           lit = 0; op++; /* start run */
-          continue;
         }
-
-      /* one more literal byte we must copy */
-
-      if (expect_false (op >= out_end))
-        return 0;
-
-      lit++;
-      *op++ = *ip++;
-
-      if (expect_false (lit == MAX_LIT))
+      else
         {
-          op [- lit - 1] = lit - 1; /* stop run */
-          lit = 0; op++; /* start run */
+          /* one more literal byte we must copy */
+          if (expect_false (op >= out_end))
+            return 0;
+
+          lit++; *op++ = *ip++;
+
+          if (expect_false (lit == MAX_LIT))
+            {
+              op [- lit - 1] = lit - 1; /* stop run */
+              lit = 0; op++; /* start run */
+            }
         }
     }
 
-  if (op + 2 >= out_end)
+  if (op + 2 > out_end) /* at most 2 bytes can be missing here */
     return 0;
 
   while (ip < in_end)
     {
-      lit++;
-      *op++ = *ip++;
+      lit++; *op++ = *ip++;
     }
 
   op [- lit - 1] = lit - 1; /* end run */
