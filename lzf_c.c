@@ -160,19 +160,27 @@ lzf_compress (const void *const in_data, unsigned int in_len,
               if (expect_false (op + lit + 1 + 3 >= out_end))
                 return 0;
 
-              if (lit)
+              if (expect_false (lit))
                 {
                   *op++ = lit - 1;
                   lit = -lit;
                   do
                     *op++ = ip[lit];
-                  while (++lit);
+                  while (expect_false (++lit));
                 }
 
               for (;;)
                 {
-                  if (expect_true (ip < in_end - 2 - 8 && maxlen > 8))
+                  if (expect_true (maxlen > 16))
                     {
+                      len++; if (ref [len] != ip [len]) break;
+                      len++; if (ref [len] != ip [len]) break;
+                      len++; if (ref [len] != ip [len]) break;
+                      len++; if (ref [len] != ip [len]) break;
+                      len++; if (ref [len] != ip [len]) break;
+                      len++; if (ref [len] != ip [len]) break;
+                      len++; if (ref [len] != ip [len]) break;
+                      len++; if (ref [len] != ip [len]) break;
                       len++; if (ref [len] != ip [len]) break;
                       len++; if (ref [len] != ip [len]) break;
                       len++; if (ref [len] != ip [len]) break;
@@ -248,7 +256,7 @@ lzf_compress (const void *const in_data, unsigned int in_len,
           *op++ = MAX_LIT - 1;
 
 #ifdef lzf_movsb
-          ip -= lit;
+          ip -= MAX_LIT;
           lzf_movsb (op, ip, lit);
 #else
           lit = -lit;
