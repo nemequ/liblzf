@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "lzf.h"
+//#include "fastlz.c"
 
 typedef unsigned long tval;
 typedef unsigned long long stamp64;
@@ -24,7 +25,7 @@ extern inline tval measure(tval t)
 		return t-tsc;
 }
 
-#define DSIZE 1000000
+#define DSIZE 2821120
 
 unsigned char data[DSIZE], data2[DSIZE*2], data3[DSIZE*2];
 
@@ -43,8 +44,9 @@ int main(void)
    for (lp = 0; lp < 1000; lp++) {
       s=stamp();
       l = lzf_compress (data, DSIZE, data2, DSIZE*2);
-      j = lzf_decompress (data2, l, data3, DSIZE*2);
+      //l = fastlz_compress_level (1, data, DSIZE, data2);
       si[0]=measure(s);
+      j = lzf_decompress (data2, l, data3, DSIZE*2);
 
       printf ("\r%10d (%d) ", si[0], l);
       if (si[0] < min && si[0] > 0)

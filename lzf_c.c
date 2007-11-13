@@ -48,13 +48,12 @@
 # define FRST(p) (((p[0]) << 8) | p[1])
 # define NEXT(v,p) (((v) << 8) | p[2])
 # if ULTRA_FAST
-#  define IDX(h) (((h >> (3*8 - HLOG)) - h  ) & (HSIZE - 1))
+#  define IDX(h) ((( h             >> (3*8 - HLOG)) - h  ) & (HSIZE - 1))
 # elif VERY_FAST
-#  define IDX(h) (((h >> (3*8 - HLOG)) - h*5) & (HSIZE - 1))
+#  define IDX(h) ((( h             >> (3*8 - HLOG)) - h*5) & (HSIZE - 1))
 # else
 #  define IDX(h) ((((h ^ (h << 5)) >> (3*8 - HLOG)) - h*5) & (HSIZE - 1))
 # endif
-/*# define IDX(h) ((ip[0] * 121 ^ ip[1] * 33 ^ ip[2] * 1) & (HSIZE-1))*/
 #endif
 /*
  * IDX works because it is very similar to a multiplicative hash, e.g.
