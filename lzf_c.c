@@ -138,7 +138,7 @@ lzf_compress (const void *const in_data, unsigned int in_len,
       ref = *hslot; *hslot = ip;
 
       if (1
-#if INIT_HTAB && !USE_MEMCPY
+#if INIT_HTAB
           && ref < ip /* the next test will actually take care of this, but this is faster */
 #endif
           && (off = ip - ref - 1) < MAX_OFF
