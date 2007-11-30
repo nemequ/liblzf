@@ -258,7 +258,7 @@ lzf_compress (const void *const in_data, unsigned int in_len,
         }
     }
 
-  if (op + 2 > out_end) /* at most 2 bytes can be missing here */
+  if (op + 3 > out_end) /* at most 3 bytes can be missing here */
     return 0;
 
   while (ip < in_end)

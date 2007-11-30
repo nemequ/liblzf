@@ -1,3 +1,7 @@
+3.1  Fri Nov 30 11:33:04 CET 2007
+	- IMPORTANT BUGFIX: a too long final literal run would corrupt data
+          in the encoder.
+
 3.0  Tue Nov 13 22:13:09 CET 2007
 	- switched to 2-clause bsd with "GPL v2 or any later version" option.
         - speed up compression by ~10-15% in common cases
