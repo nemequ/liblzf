@@ -1,6 +1,13 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include <time.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <math.h>
+#include <X11/Xlib.h>
 
 #include "lzf.h"
 //#include "fastlz.c"
@@ -36,17 +43,25 @@ int main(void)
    int i, l, j;
    int min = 1<<30;
    int lp;
+   char buf[8192];
+   int p[2];
+
+   pipe (p);
 
    FILE *f = fopen ("data", "r");
    fread (data, DSIZE, 1, f);
    fclose (f);
-   
-   for (lp = 0; lp < 1000; lp++) {
+
+   for (lp = 0; lp < 100000; lp++) {
       s=stamp();
-      l = lzf_compress (data, DSIZE, data2, DSIZE*2);
-      //l = fastlz_compress_level (1, data, DSIZE, data2);
+
+      kill (0, 23);
+//      write (p[1], &p, 1);
+//      read (p[1], &i, 4);
+
       si[0]=measure(s);
-      j = lzf_decompress (data2, l, data3, DSIZE*2);
+
+      //j = lzf_decompress (data2, l, data3, DSIZE*2);
 
       printf ("\r%10d (%d) ", si[0], l);
       if (si[0] < min && si[0] > 0)
@@ -57,7 +72,7 @@ int main(void)
 
       fflush (stdout);
 
-      assert (memcmp (data, data3, DSIZE) == 0);
+      //assert (memcmp (data, data3, DSIZE) == 0);
    }
    return 0;
 }

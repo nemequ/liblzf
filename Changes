@@ -1,6 +1,7 @@
 3.1  Fri Nov 30 11:33:04 CET 2007
 	- IMPORTANT BUGFIX: a too long final literal run would corrupt data
-          in the encoder.
+          in the encoder (this was introduced in 3.0 only, earlier versions
+          are safe).
 
 3.0  Tue Nov 13 22:13:09 CET 2007
 	- switched to 2-clause bsd with "GPL v2 or any later version" option.
