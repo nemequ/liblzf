@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <math.h>
+#include <signal.h>
 #include <X11/Xlib.h>
 
 #include "lzf.h"
@@ -32,6 +33,12 @@ extern inline tval measure(tval t)
 		return t-tsc;
 }
 
+static void sigu (int signum)
+{
+}
+
+int eventfd(unsigned int,int);
+
 #define DSIZE 2821120
 
 unsigned char data[DSIZE], data2[DSIZE*2], data3[DSIZE*2];
@@ -45,6 +52,8 @@ int main(void)
    int lp;
    char buf[8192];
    int p[2];
+   int evfd = eventfd (0, 0);
+   long ctr = 1;
 
    pipe (p);
 
@@ -52,12 +61,17 @@ int main(void)
    fread (data, DSIZE, 1, f);
    fclose (f);
 
+   signal (SIGURG, sigu);
+
    for (lp = 0; lp < 100000; lp++) {
       s=stamp();
 
-      kill (0, 23);
-//      write (p[1], &p, 1);
-//      read (p[1], &i, 4);
+      snprintf (buf, 64, "<1.%llx>", (unsigned long long)0xa234567812ULL);
+      //kill (0, SIGURG);
+      //write (evfd, &ctr, 8);
+      //read (evfd, &ctr, 8);
+//      write (p[1], &buf, 1);
+//      read (p[0], &buf, 4);
 
       si[0]=measure(s);
 

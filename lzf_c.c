@@ -114,7 +114,11 @@ lzf_compress (const void *const in_data, unsigned int in_len,
   const u8 *ref;
 
   unsigned int hval;
+#if WIN32
+  unsigned _int64 off; /* workaround for microsoft bug (they claim to support POSIX) */
+#else
   unsigned long off;
+#endif
   int lit;
 
   if (!in_len || !out_len)
