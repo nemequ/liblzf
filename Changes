@@ -1,7 +1,8 @@
 
-	- include a workaround for a compiler bug on 64 bit windows
-          (microsoft claims to support POSIX, but is far from it).
-          (analysed nicely by John Lilley).
+3.2
+	- include a workaround for failing POSIX and real-world compliance
+          on 64 bit windows (microsoft claims to support POSIX, but is far
+          from it). (bug found and analysed nicely by John Lilley).
 
 3.1  Fri Nov 30 11:33:04 CET 2007
 	- IMPORTANT BUGFIX: a too long final literal run would corrupt data
