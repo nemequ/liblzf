@@ -1,5 +1,9 @@
+3.3  Mon Aug 25 03:17:42 CEST 2008
+	- lzf_compress could access memory after the given input buffer
+          when outputting back references. reported with nice testcase
+          by Clément Calmels.
 
-3.2
+3.2  Fri May  9 18:52:23 CEST 2008
 	- include a workaround for failing POSIX and real-world compliance
           on 64 bit windows (microsoft claims to support POSIX, but is far
           from it). (bug found and analysed nicely by John Lilley).
@@ -55,7 +59,7 @@
 
 1.51 Thu Apr 14 22:15:46 CEST 2005
 	- incorporated C♯ implementation of both the en- and decoder,
-          written by "Oren J. Maurice <oymaurice@hazorea.org.il>".
+          written by "Oren J. Maurice".
           You can find it in the cs/ subdirectory.
         - make FRST, NEXT IDX overridable if lzf_c.c is directly included
           in the code.
