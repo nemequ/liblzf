@@ -226,7 +226,7 @@ lzf_compress (const void *const in_data, unsigned int in_len,
 
           ip += len + 1;
 
-          if (expect_false (ip > in_end - 2))
+          if (expect_false (ip >= in_end - 2))
             break;
 
 #if ULTRA_FAST || VERY_FAST
