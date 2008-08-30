@@ -222,37 +222,40 @@ lzf_compress (const void *const in_data, unsigned int in_len,
             }
 
           *op++ = off;
+          lit = 0; op++; /* start run */
 
-          if (expect_true (ip + len < in_end - 2))
-            {
+          ip += len + 1;
+
+          if (expect_false (ip > in_end - 2))
+            break;
+
 #if ULTRA_FAST || VERY_FAST
-              ip += len;
+          --ip;
 # if VERY_FAST && !ULTRA_FAST
-              --ip;
+          --ip;
 # endif
-              hval = FRST (ip);
+          hval = FRST (ip);
 
-              hval = NEXT (hval, ip);
-              htab[IDX (hval)] = ip;
-              ip++;
+          hval = NEXT (hval, ip);
+          htab[IDX (hval)] = ip;
+          ip++;
 
 # if VERY_FAST && !ULTRA_FAST
-              hval = NEXT (hval, ip);
-              htab[IDX (hval)] = ip;
-              ip++;
+          hval = NEXT (hval, ip);
+          htab[IDX (hval)] = ip;
+          ip++;
 # endif
 #else
-              do
-                {
-                  hval = NEXT (hval, ip);
-                  htab[IDX (hval)] = ip;
-                  ip++;
-                }
-              while (len--);
-#endif
-            }
+          ip -= len + 1;
 
-          lit = 0; op++; /* start run */
+          do
+            {
+              hval = NEXT (hval, ip);
+              htab[IDX (hval)] = ip;
+              ip++;
+            }
+          while (len--);
+#endif
         }
       else
         {
