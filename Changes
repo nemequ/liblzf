@@ -1,6 +1,6 @@
 3.4  Tue Sep  2 06:45:00 CEST 2008
 	- the fix from 3.3 introduced a compression bug, which is fixed in
-          this release (which explains the mysterious prerelease...). thanls
+          this release (which explains the mysterious prerelease...). Thanks
           once more to Clément Calmels.
 
 3.3  Mon Aug 25 03:17:42 CEST 2008

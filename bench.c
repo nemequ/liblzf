@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 #include <math.h>
 #include <signal.h>
 #include <X11/Xlib.h>
@@ -54,6 +55,7 @@ int main(void)
    int p[2];
    int evfd = eventfd (0, 0);
    long ctr = 1;
+   struct stat sbuf;
 
    pipe (p);
 
@@ -66,12 +68,15 @@ int main(void)
    for (lp = 0; lp < 100000; lp++) {
       s=stamp();
 
-      snprintf (buf, 64, "<1.%llx>", (unsigned long long)0xa234567812ULL);
+      //snprintf (buf, 64, "<1.%llx>", (unsigned long long)0xa234567812ULL);
+      //getpgrp();
       //kill (0, SIGURG);
       //write (evfd, &ctr, 8);
       //read (evfd, &ctr, 8);
-//      write (p[1], &buf, 1);
-//      read (p[0], &buf, 4);
+      //write (p[1], &buf, 1);
+      //read (p[0], &buf, 4);
+      //stat ("/etc/passwd", &sbuf);
+      free(malloc(8*1024*1024));
 
       si[0]=measure(s);
 
