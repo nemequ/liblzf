@@ -69,18 +69,23 @@ int main(void)
       s=stamp();
 
       //snprintf (buf, 64, "<1.%llx>", (unsigned long long)0xa234567812ULL);
-      //getpgrp();
+      getpgrp();
       //kill (0, SIGURG);
       //write (evfd, &ctr, 8);
       //read (evfd, &ctr, 8);
       //write (p[1], &buf, 1);
       //read (p[0], &buf, 4);
       //stat ("/etc/passwd", &sbuf);
-      free(malloc(8*1024*1024));
+      //struct timeval tv;
+      //gettimeofday (&tv, 0);
+
+      l = lzf_compress (data, DSIZE, data2, DSIZE*2);
+      assert(l);
 
       si[0]=measure(s);
 
-      //j = lzf_decompress (data2, l, data3, DSIZE*2);
+      j = lzf_decompress (data2, l, data3, DSIZE*2);
+      assert (j == DSIZE);
 
       printf ("\r%10d (%d) ", si[0], l);
       if (si[0] < min && si[0] > 0)
