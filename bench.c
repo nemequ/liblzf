@@ -3,10 +3,12 @@
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
+#include <sys/times.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
+#include <sys/resource.h>
 #include <math.h>
 #include <signal.h>
 #include <X11/Xlib.h>
@@ -65,27 +67,29 @@ int main(void)
 
    signal (SIGURG, sigu);
 
-   for (lp = 0; lp < 100000; lp++) {
+   for (lp = 0; lp < 1000000; lp++) {
       s=stamp();
 
-      //snprintf (buf, 64, "<1.%llx>", (unsigned long long)0xa234567812ULL);
-      getpgrp();
+      struct timespec ts; clock_gettime (CLOCK_THREAD_CPUTIME_ID, &ts);
+      //printf ("%9ld\n", ts.tv_nsec);//D
+      //struct rusage usage; getrusage (RUSAGE_SELF, &usage);
+      //struct tms tms; times (&tms);
+
       //kill (0, SIGURG);
       //write (evfd, &ctr, 8);
       //read (evfd, &ctr, 8);
       //write (p[1], &buf, 1);
       //read (p[0], &buf, 4);
       //stat ("/etc/passwd", &sbuf);
-      //struct timeval tv;
-      //gettimeofday (&tv, 0);
+      //struct timeval tv; gettimeofday (&tv, 0);
 
-      l = lzf_compress (data, DSIZE, data2, DSIZE*2);
-      assert(l);
+      //l = lzf_compress (data, DSIZE, data2, DSIZE*2);
+      //assert(l);
 
       si[0]=measure(s);
 
-      j = lzf_decompress (data2, l, data3, DSIZE*2);
-      assert (j == DSIZE);
+      //j = lzf_decompress (data2, l, data3, DSIZE*2);
+      //assert (j == DSIZE);
 
       printf ("\r%10d (%d) ", si[0], l);
       if (si[0] < min && si[0] > 0)
