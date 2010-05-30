@@ -89,9 +89,9 @@
 /*
  * compressed format
  *
- * 000LLLLL <L+1>    ; literal
- * LLLooooo oooooooo ; backref L
- * 111ooooo LLLLLLLL oooooooo ; backref L+7
+ * 000LLLLL <L+1>    ; literal, L+1=1..33 octets
+ * LLLooooo oooooooo ; backref L+1=1..7 octets, o+1=1..4096 offset
+ * 111ooooo LLLLLLLL oooooooo ; backref L+8 octets, o+1=1..4096 offset
  *
  */
 

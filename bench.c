@@ -6,6 +6,7 @@
 #include <sys/times.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/mman.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/resource.h>
@@ -70,7 +71,7 @@ int main(void)
    for (lp = 0; lp < 1000000; lp++) {
       s=stamp();
 
-      struct timespec ts; clock_gettime (CLOCK_THREAD_CPUTIME_ID, &ts);
+      //struct timespec ts; clock_gettime (CLOCK_THREAD_CPUTIME_ID, &ts);
       //printf ("%9ld\n", ts.tv_nsec);//D
       //struct rusage usage; getrusage (RUSAGE_SELF, &usage);
       //struct tms tms; times (&tms);
@@ -82,14 +83,17 @@ int main(void)
       //read (p[0], &buf, 4);
       //stat ("/etc/passwd", &sbuf);
       //struct timeval tv; gettimeofday (&tv, 0);
+      //void *x = mmap (0, 16384, PROT_READ|PROT_WRITE, MAP_ANONYMOUS|MAP_PRIVATE,-1,0);
 
-      //l = lzf_compress (data, DSIZE, data2, DSIZE*2);
-      //assert(l);
+      l = lzf_compress (data, DSIZE, data2, DSIZE*2);
+      assert(l);
+
+      j = lzf_decompress (data2, l, data3, DSIZE*2);
+      assert (j == DSIZE);
 
       si[0]=measure(s);
 
-      //j = lzf_decompress (data2, l, data3, DSIZE*2);
-      //assert (j == DSIZE);
+      assert (!memcmp (data, data3, DSIZE));
 
       printf ("\r%10d (%d) ", si[0], l);
       if (si[0] < min && si[0] > 0)
