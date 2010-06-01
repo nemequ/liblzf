@@ -106,7 +106,6 @@ lzf_compress (const void *const in_data, unsigned int in_len,
 #if !LZF_STATE_ARG
   LZF_STATE htab;
 #endif
-  const u8 **hslot;
   const u8 *ip = (const u8 *)in_data;
         u8 *op = (u8 *)out_data;
   const u8 *in_end  = ip + in_len;
@@ -133,10 +132,6 @@ lzf_compress (const void *const in_data, unsigned int in_len,
 
 #if INIT_HTAB
   memset (htab, 0, sizeof (htab));
-# if 0
-  for (hslot = htab; hslot < htab + HSIZE; hslot++)
-    *hslot++ = ip;
-# endif
 #endif
 
   lit = 0; op++; /* start run */
@@ -144,9 +139,11 @@ lzf_compress (const void *const in_data, unsigned int in_len,
   hval = FRST (ip);
   while (ip < in_end - 2)
     {
+      LZF_HSLOT *hslot;
+
       hval = NEXT (hval, ip);
       hslot = htab + IDX (hval);
-      ref = *hslot; *hslot = ip;
+      ref = *hslot + LZF_HSLOT_BIAS; *hslot = ip - LZF_HSLOT_BIAS;
 
       if (1
 #if INIT_HTAB
@@ -236,12 +233,12 @@ lzf_compress (const void *const in_data, unsigned int in_len,
           hval = FRST (ip);
 
           hval = NEXT (hval, ip);
-          htab[IDX (hval)] = ip;
+          htab[IDX (hval)] = ip - LZF_HSLOT_BIAS;
           ip++;
 
 # if VERY_FAST && !ULTRA_FAST
           hval = NEXT (hval, ip);
-          htab[IDX (hval)] = ip;
+          htab[IDX (hval)] = ip - LZF_HSLOT_BIAS;
           ip++;
 # endif
 #else
@@ -250,7 +247,7 @@ lzf_compress (const void *const in_data, unsigned int in_len,
           do
             {
               hval = NEXT (hval, ip);
-              htab[IDX (hval)] = ip;
+              htab[IDX (hval)] = ip - LZF_HSLOT_BIAS;
               ip++;
             }
           while (len--);

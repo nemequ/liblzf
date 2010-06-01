@@ -121,27 +121,52 @@
 # define CHECK_INPUT 1
 #endif
 
+/*
+ * Whether to store pointers or offsets inside the hash table. On
+ * 64 bit architetcures, pointers take up twice as much space,
+ * and might also be slower. Default is to autodetect.
+ */
+/*#define LZF_USER_OFFSETS autodetect */
+
 /*****************************************************************************/
 /* nothing should be changed below */
 
 #ifdef __cplusplus
 # include <cstring>
+# include <climits>
 using namespace std;
 #else
 # include <string.h>
+# include <limits.h>
+#endif
+
+#ifndef LZF_USE_OFFSETS
+# if defined (WIN32)
+#  define LZF_USE_OFFSETS defined(_M_X64)
+# else
+#  ifdef __cplusplus
+#   include <cstdint>
+#  else
+#   include <stdint.h>
+#  endif
+#  define LZF_USE_OFFSETS (UINTPTR_MAX > 0xffffffffU)
+# endif
 #endif
 
 typedef unsigned char u8;
 
-typedef const u8 *LZF_STATE[1 << (HLOG)];
+#if LZF_USE_OFFSETS
+# define LZF_HSLOT_BIAS ((const u8 *)in_data)
+  typedef unsigned int LZF_HSLOT;
+#else
+# define LZF_HSLOT_BIAS 0
+  typedef const u8 *LZF_HSLOT;
+#endif
+
+typedef LZF_HSLOT LZF_STATE[1 << (HLOG)];
 
 #if !STRICT_ALIGN
 /* for unaligned accesses we need a 16 bit datatype. */
-# ifdef __cplusplus
-#  include <climits>
-# else
-#  include <limits.h>
-# endif
 # if USHRT_MAX == 65535
     typedef unsigned short u16;
 # elif UINT_MAX == 65535
