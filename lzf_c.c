@@ -40,8 +40,8 @@
 
 /*
  * don't play with this unless you benchmark!
- * decompression is not dependent on the hash function
- * the hashing function might seem strange, just believe me
+ * the data format is not dependent on the hash function.
+ * the hash function might seem strange, just believe me,
  * it works ;)
  */
 #ifndef FRST
