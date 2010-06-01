@@ -49,7 +49,7 @@
  * the difference between 15 and 14 is very small
  * for small blocks (and 14 is usually a bit faster).
  * For a low-memory/faster configuration, use HLOG == 13;
- * For best compression, use 15 or 16 (or more, up to 23).
+ * For best compression, use 15 or 16 (or more, up to 22).
  */
 #ifndef HLOG
 # define HLOG 16

@@ -150,7 +150,6 @@ lzf_compress (const void *const in_data, unsigned int in_len,
           && ref < ip /* the next test will actually take care of this, but this is faster */
 #endif
           && (off = ip - ref - 1) < MAX_OFF
-          && ip + 4 < in_end
           && ref > (u8 *)in_data
           && ref[2] == ip[2]
 #if STRICT_ALIGN
@@ -218,6 +217,7 @@ lzf_compress (const void *const in_data, unsigned int in_len,
             }
 
           *op++ = off;
+
           lit = 0; op++; /* start run */
 
           ip += len + 1;
