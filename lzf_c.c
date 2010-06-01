@@ -154,7 +154,7 @@ lzf_compress (const void *const in_data, unsigned int in_len,
           && ref > (u8 *)in_data
           && ref[2] == ip[2]
 #if STRICT_ALIGN
-          && (ref[1] << 8) | ref[0] == (ip[1] << 8) | ip[0]
+          && ((ref[1] << 8) | ref[0]) == ((ip[1] << 8) | ip[0])
 #else
           && *(u16 *)ref == *(u16 *)ip
 #endif
