@@ -94,7 +94,7 @@
 /*
  * Avoid assigning values to errno variable? for some embedding purposes
  * (linux kernel for example), this is necessary. NOTE: this breaks
- * the documentation in lzf.h.
+ * the documentation in lzf.h. Avoiding errno has no speed impact.
  */
 #ifndef AVOID_ERRNO
 # define AVOID_ERRNO 0
@@ -124,13 +124,24 @@
 /*****************************************************************************/
 /* nothing should be changed below */
 
+#ifdef __cplusplus
+# include <cstring>
+using namespace std;
+#else
+# include <string.h>
+#endif
+
 typedef unsigned char u8;
 
 typedef const u8 *LZF_STATE[1 << (HLOG)];
 
 #if !STRICT_ALIGN
 /* for unaligned accesses we need a 16 bit datatype. */
-# include <limits.h>
+# ifdef __cplusplus
+#  include <climits>
+# else
+#  include <limits.h>
+# endif
 # if USHRT_MAX == 65535
     typedef unsigned short u16;
 # elif UINT_MAX == 65535
@@ -142,17 +153,7 @@ typedef const u8 *LZF_STATE[1 << (HLOG)];
 #endif
 
 #if ULTRA_FAST
-# if defined(VERY_FAST)
-#  undef VERY_FAST
-# endif
-#endif
-
-#if INIT_HTAB
-# ifdef __cplusplus
-#  include <cstring>
-# else
-#  include <string.h>
-# endif
+# undef VERY_FAST
 #endif
 
 #endif

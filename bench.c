@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <assert.h>
 #include <string.h>
 #include <time.h>
@@ -41,8 +42,6 @@ static void sigu (int signum)
 {
 }
 
-int eventfd(unsigned int,int);
-
 #define DSIZE 2821120
 
 unsigned char data[DSIZE], data2[DSIZE*2], data3[DSIZE*2];
@@ -56,7 +55,6 @@ int main(void)
    int lp;
    char buf[8192];
    int p[2];
-   int evfd = eventfd (0, 0);
    long ctr = 1;
    struct stat sbuf;
 

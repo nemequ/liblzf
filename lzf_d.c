@@ -36,8 +36,6 @@
 
 #include "lzfP.h"
 
-#include <string.h> /* for memcpy/memset */
-
 #if AVOID_ERRNO
 # define SET_ERRNO(n)
 #else

@@ -4,6 +4,7 @@
           greatly speeding up decompression in most cases.
         - finally disable rep movsb - it's a big loss on modern intel cpus,
           and only a small win on amd cpus.
+        - improve c++ compatibility of the code.
 
 3.5  Fri May  1 02:28:42 CEST 2009
 	- lzf_compress did sometimes write one octet past the given output
