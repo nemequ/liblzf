@@ -1,3 +1,7 @@
+
+	- use _WIN32, not WIN32, when testing for windows (fails with bcc),
+          patch by Tamas Tevesz.
+
 3.6  Mon Feb  7 17:37:31 CET 2011
 	- fixed hash calculation in C♯ version (Tiago Freitas Leal).
         - unroll copy for small sizes, use memcpy for larger sizes,
