@@ -43,6 +43,7 @@ static void sigu (int signum)
 }
 
 #define DSIZE 2821120
+#define DSIZE 32768
 
 unsigned char data[DSIZE], data2[DSIZE*2], data3[DSIZE*2];
 

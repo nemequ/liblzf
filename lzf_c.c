@@ -47,22 +47,22 @@
 #ifndef FRST
 # define FRST(p) (((p[0]) << 8) | p[1])
 # define NEXT(v,p) (((v) << 8) | p[2])
-# if ULTRA_FAST
-#  define IDX(h) ((( h             >> (3*8 - HLOG)) - h  ) & (HSIZE - 1))
-# elif VERY_FAST
-#  define IDX(h) ((( h             >> (3*8 - HLOG)) - h*5) & (HSIZE - 1))
+# if MULTIPLICATION_IS_SLOW
+#  if ULTRA_FAST
+#   define IDX(h) ((( h             >> (3*8 - HLOG)) - h  ) & (HSIZE - 1))
+#  elif VERY_FAST
+#   define IDX(h) ((( h             >> (3*8 - HLOG)) - h*5) & (HSIZE - 1))
+#  else
+#   define IDX(h) ((((h ^ (h << 5)) >> (3*8 - HLOG)) - h*5) & (HSIZE - 1))
+#  endif
 # else
-#  define IDX(h) ((((h ^ (h << 5)) >> (3*8 - HLOG)) - h*5) & (HSIZE - 1))
+/* this one was developed with sesse,
+ * and is very similar to the one in snappy.
+ * it does need a modern enough cpu with a fast multiplication.
+ */
+#  define IDX(h) (((h * 0x1e35a7bdU) >> (32 - HLOG - 8)) & (HSIZE - 1))
 # endif
 #endif
-/*
- * IDX works because it is very similar to a multiplicative hash, e.g.
- * ((h * 57321 >> (3*8 - HLOG)) & (HSIZE - 1))
- * the latter is also quite fast on newer CPUs, and compresses similarly.
- *
- * the next one is also quite good, albeit slow ;)
- * (int)(cos(h & 0xffffff) * 1e6)
- */
 
 #if 0
 /* original lzv-like hash function, much worse and thus slower */

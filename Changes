@@ -1,4 +1,10 @@
 
+	- switch to a multiplicative hash (developed with Steinar Gunderson),
+          which is faster on modern cpus and compresses a bit better. The old
+          hash function which uses only shifts is still available.
+        - allow user configurable hash table slots, which makes it possible
+          to use e.g. 16 bit offsets for a smaller hashtable (if your data is
+          always < 64kb).
 	- use _WIN32, not WIN32, when testing for windows (fails with bcc),
           patch by Tamas Tevesz.
 

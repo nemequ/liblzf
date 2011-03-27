@@ -88,7 +88,7 @@
  * deterministic/repeatable when the configuration otherwise is the same).
  */
 #ifndef INIT_HTAB
-# define INIT_HTAB 0
+# define INIT_HTAB 1
 #endif
 
 /*
@@ -122,11 +122,29 @@
 #endif
 
 /*
+ * Whether the target CPU has a slow multiplication. This affects
+ * the default hash function for the compressor, and enables a slightly
+ * worse hash function that needs only shifts.
+ */
+#ifndef MULTIPLICATION_IS_SLOW
+# define MULTIPLICATION_IS_SLOW 0
+#endif
+
+/*
+ * If defined, then this data type will be used for storing offsets.
+ * This can be useful if you want to use a huge hashtable, want to
+ * conserve memory, or both, and your data fits into e.g. 64kb.
+ * If instead you want to compress data > 4GB, then it's better to
+ * to "#define LZF_USE_OFFSETS 0" instead.
+ */
+/*#define LZF_HSLOT unsigned short*/
+
+/*
  * Whether to store pointers or offsets inside the hash table. On
  * 64 bit architetcures, pointers take up twice as much space,
  * and might also be slower. Default is to autodetect.
  */
-/*#define LZF_USER_OFFSETS autodetect */
+/*#define LZF_USE_OFFSETS autodetect */
 
 /*****************************************************************************/
 /* nothing should be changed below */
@@ -155,12 +173,16 @@ using namespace std;
 
 typedef unsigned char u8;
 
-#if LZF_USE_OFFSETS
+#ifdef LZF_HSLOT
 # define LZF_HSLOT_BIAS ((const u8 *)in_data)
-  typedef unsigned int LZF_HSLOT;
 #else
-# define LZF_HSLOT_BIAS 0
-  typedef const u8 *LZF_HSLOT;
+# if LZF_USE_OFFSETS
+#  define LZF_HSLOT_BIAS ((const u8 *)in_data)
+   typedef unsigned int LZF_HSLOT;
+# else
+#  define LZF_HSLOT_BIAS 0
+   typedef const u8 *LZF_HSLOT;
+# endif
 #endif
 
 typedef LZF_HSLOT LZF_STATE[1 << (HLOG)];
