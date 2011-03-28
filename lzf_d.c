@@ -43,6 +43,7 @@
 # define SET_ERRNO(n) errno = (n)
 #endif
 
+#define USE_REP_MOVSB 1
 #if USE_REP_MOVSB /* small win on amd, big loss on intel */
 #if (__i386 || __amd64) && __GNUC__ >= 3
 # define lzf_movsb(dst, src, len)                \
