@@ -1,4 +1,7 @@
 
+TODO: try unaligned copy again in decompressor
+TODO: allow size-optimised binaries by avoiding unrolling
+
 	- switch to a multiplicative hash (developed with Steinar Gunderson),
           which is faster on modern cpus and compresses a bit better. The old
           hash function which uses only shifts is still available.
