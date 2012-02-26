@@ -10,6 +10,8 @@ TODO: allow size-optimised binaries by avoiding unrolling
           always < 64kb).
 	- use _WIN32, not WIN32, when testing for windows (fails with bcc),
           patch by Tamas Tevesz.
+        - try to port to win64+gcc, which is non-posix but has not _int64
+          (reported by Maciej Adamczyk).
 
 3.6  Mon Feb  7 17:37:31 CET 2011
 	- fixed hash calculation in C♯ version (Tiago Freitas Leal).

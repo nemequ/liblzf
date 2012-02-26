@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2010 Marc Alexander Lehmann <schmorp@schmorp.de>
+ * Copyright (c) 2000-2010,2012 Marc Alexander Lehmann <schmorp@schmorp.de>
  * 
  * Redistribution and use in source and binary forms, with or without modifica-
  * tion, are permitted provided that the following conditions are met:
@@ -119,8 +119,13 @@ lzf_compress (const void *const in_data, unsigned int in_len,
    * and fails to support both assumptions is windows 64 bit, we make a
    * special workaround for it.
    */
-#if defined (WIN32) && defined (_M_X64)
-  unsigned _int64 off; /* workaround for missing POSIX compliance */
+#if defined (_WIN32) && defined (_M_X64)
+  /* workaround for missing POSIX compliance */
+  #if  #if __GNUC__
+    unsigned long long off;
+  #else
+    unsigned __int64 off;
+  #endif
 #else
   unsigned long off;
 #endif
