@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2006      Stefan Traby <stefan@hello-penguin.com>
+ * Copyright (c) 2012      Marc Lehmann <schmorp@schmorp.de>
  * 
  * Redistribution and use in source and binary forms, with or without modifica-
  * tion, are permitted provided that the following conditions are met:
@@ -45,6 +46,7 @@
 #include <errno.h>
 #include <limits.h>
 #include "lzf.h"
+#include "lzf_c_best.c"
 
 #ifdef HAVE_GETOPT_H
 # include <getopt.h>
@@ -60,33 +62,40 @@ static off_t nr_read, nr_written;
 static const char *imagename;
 static enum { compress, uncompress, lzcat } mode = compress;
 static int verbose = 0;
+static int best = 0;
 static int force = 0;
 static long blocksize = BLOCKSIZE;
 
 #ifdef HAVE_GETOPT_LONG
 
   struct option longopts[] = {
-    {"compress", 0, 0, 'c'},
+    {"compress"  , 0, 0, 'c'},
     {"decompress", 0, 0, 'd'},
     {"uncompress", 0, 0, 'd'},
-    {"force", 0, 0, 'f'},
-    {"help", 0, 0, 'h'},
-    {"verbose", 0, 0, 'v'},
-    {"blocksize", 1, 0, 'b'},
-    {0, 0, 0, 0}
+    {"best"      , 0, 0, '9'},
+    {"force"     , 0, 0, 'f'},
+    {"help"      , 0, 0, 'h'},
+    {"verbose"   , 0, 0, 'v'},
+    {"blocksize" , 1, 0, 'b'},
+    {0           , 0, 0,   0}
   };
 
   static const char *opt =
     "-c --compress    compress\n"
     "-d --decompress  decompress\n"
+    "-9 --best        best compression\n"
     "-f --force       force overwrite of output file\n"
-    "-h --help        give this help\n" "-v --verbose     verbose mode\n" "-b # --blocksize # set blocksize\n" "\n";
+    "-h --help        give this help\n"
+    "-v --verbose     verbose mode\n"
+    "-b # --blocksize # set blocksize\n"
+    "\n";
 
 #else
 
   static const char *opt =
     "-c   compress\n"
     "-d   decompress\n"
+    "-9   best compression\n"
     "-f   force overwrite of output file\n"
     "-h   give this help\n"
     "-v   verbose mode\n"
@@ -103,7 +112,7 @@ usage (int rc)
            "uses liblzf written by Marc Lehmann <schmorp@schmorp.de> You can find more info at\n"
            "http://liblzf.plan9.de/\n"
            "\n"
-           "usage: lzf [-dufhvb] [file ...]\n"
+           "usage: lzf [-dufhvb9] [file ...]\n"
            "       unlzf [file ...]\n"
            "       lzcat [file ...]\n"
            "\n%s",
@@ -184,7 +193,7 @@ compress_fd (int from, int to)
   nr_read = nr_written = 0;
   while ((us = rread (from, &buf1[MAX_HDR_SIZE], blocksize)) > 0)
     {
-      cs = lzf_compress (&buf1[MAX_HDR_SIZE], us, &buf2[MAX_HDR_SIZE], us > 4 ? us - 4 : us);
+      cs = (best ? lzf_compress_best : lzf_compress) (&buf1[MAX_HDR_SIZE], us, &buf2[MAX_HDR_SIZE], us > 4 ? us - 4 : us);
       if (cs)
         {
           header = &buf2[MAX_HDR_SIZE - TYPE1_HDR_SIZE];
@@ -471,9 +480,9 @@ main (int argc, char *argv[])
     mode = lzcat;
 
 #ifdef HAVE_GETOPT_LONG
-  while ((optc = getopt_long (argc, argv, "cdfhvb:", longopts, 0)) != -1)
+  while ((optc = getopt_long (argc, argv, "cd9fhvb:", longopts, 0)) != -1)
 #else
-  while ((optc = getopt (argc, argv, "cdfhvb:")) != -1)
+  while ((optc = getopt (argc, argv, "cd9fhvb:")) != -1)
 #endif
     {
       switch (optc)
@@ -483,6 +492,9 @@ main (int argc, char *argv[])
             break;
           case 'd':
             mode = uncompress;
+            break;
+          case '9':
+            best = 1;
             break;
           case 'f':
             force = 1;
