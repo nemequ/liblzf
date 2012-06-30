@@ -121,7 +121,7 @@ lzf_compress (const void *const in_data, unsigned int in_len,
    */
 #if defined (_WIN32) && defined (_M_X64)
   /* workaround for missing POSIX compliance */
-  #if  #if __GNUC__
+  #if __GNUC__
     unsigned long long off;
   #else
     unsigned __int64 off;
