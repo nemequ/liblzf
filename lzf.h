@@ -91,7 +91,7 @@ lzf_compress (const void *const in_data,  unsigned int in_len,
  * guaranteeed to be big enough.
  * This macro can be used at preprocessing time.
  */
-#define LZF_MAX_COMPRESSED_SIZE(n) ((n) * 33 / 32 + 1)
+#define LZF_MAX_COMPRESSED_SIZE(n) ((((n) * 33) >> 5 ) + 1)
 
 /*
  * Decompress data compressed with some version of the lzf_compress
