@@ -46,7 +46,12 @@
 **
 ***********************************************************************/
 
-#define LZF_VERSION 0x0105 /* 1.5, API version */
+/* API version (major * 256 + minor)
+ * major API version gets bumped on incompatible changes.
+ * minor API version gets bumped on compatible changes.
+ * 1.5 => 1.6: add LZF_MAX_COMPRESSED_SIZE
+ */
+#define LZF_VERSION 0x0106
 
 /*
  * Compress in_len bytes stored at the memory block starting at
@@ -76,6 +81,17 @@
 unsigned int
 lzf_compress (const void *const in_data,  unsigned int in_len,
               void             *out_data, unsigned int out_len);
+
+/*
+ * The maximum out_len that needs to be allocated to make sure
+ * any input data can be compressed without overflowing the output
+ * buffer, i.e. maximum out_len = LZF_MAX_COMPRESSED_SIZE (in_len).
+ * This is useful if you don't want to bother with the case of
+ * incompressible data and just want to provide a buffer that is
+ * guaranteeed to be big enough.
+ * This macro can be used at preprocessing time.
+ */
+#define LZF_MAX_COMPRESSED_SIZE(n) ((n) * 33 / 32 + 1)
 
 /*
  * Decompress data compressed with some version of the lzf_compress
