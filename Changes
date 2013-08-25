@@ -4,6 +4,8 @@ TODO: allow size-optimised binaries by avoiding unrolling
 TODO: implement lzf_c_best in lzf.
 TODO: fix lzf_c_best.
 
+3.7 (unreleased)
+	- add lzf_c_best.c, a slower but better compressor.
 	- switch to a multiplicative hash (developed with Steinar Gunderson),
           which is faster on modern cpus and compresses a bit better. The old
           hash function which uses only shifts is still available.
