@@ -72,7 +72,7 @@ lzf_compress_best (const void *const in_data, unsigned int in_len,
         u8 *out_end = op + out_len;
 
   const u8 *first [1 << (6+8)]; /* most recent occurance of a match */
-  u16 prev [MAX_OFF]; /* how many bytes to go backwards for te next match */
+  u16 prev [MAX_OFF]; /* how many bytes to go backwards for the next match */
 
   int lit;
 
@@ -116,7 +116,7 @@ lzf_compress_best (const void *const in_data, unsigned int in_len,
                 }
 
           diff = prev [((unsigned int)p) & (MAX_OFF - 1)];
-          p = diff ? p - diff : (u8 *)diff;
+          p = diff ? p - diff : 0;
         }
 
       if (best_l)

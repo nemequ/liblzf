@@ -23,15 +23,15 @@ typedef unsigned long long stamp64;
 
 extern inline tval stamp(void)
 {
-	tval tsc;
-	asm volatile("rdtsc" : "=a" (tsc) : : "edx");
+	tval tsc; long dummy;
+	asm volatile("cpuid; rdtsc" : "=a" (tsc), "=d" (dummy) : "a" (0) : "ebx", "ecx");
 	return tsc;
 }
 
 extern inline tval measure(tval t)
 {
-	tval tsc;
-	asm volatile("rdtsc" : "=a" (tsc) : : "edx");
+	tval tsc; long dummy;
+	asm volatile("cpuid; rdtsc" : "=a" (tsc), "=d" (dummy) : "a" (0) : "ebx", "ecx");
 	if (tsc>t)
 		return tsc-t;
 	else
@@ -45,7 +45,7 @@ static void sigu (int signum)
 #define DSIZE 17318440
 //#define DSIZE 32768
 
-#include "lzf_c_slow.c"
+#include "lzf_c_best.c"
 
 unsigned char data[DSIZE], data2[DSIZE*2], data3[DSIZE*2];
 
@@ -86,7 +86,7 @@ int main(void)
       //struct timeval tv; gettimeofday (&tv, 0);
       //void *x = mmap (0, 16384, PROT_READ|PROT_WRITE, MAP_ANONYMOUS|MAP_PRIVATE,-1,0);
 
-      l = lzf_compress_slow (data, DSIZE, data2, DSIZE*2);
+      l = lzf_compress_best (data, DSIZE, data2, DSIZE*2);
       //for (k = 0; k < l; ++k)
         //printf ("1 %2d: %02x\n", k, data2[k]);
       assert(l);
