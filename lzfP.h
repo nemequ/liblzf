@@ -146,6 +146,19 @@
  */
 /*#define LZF_USE_OFFSETS autodetect */
 
+/*
+ * Whether to optimise code for size, at the expense of speed. Use
+ * this when you are extremely tight on memory, perhaps in combination
+ * with AVOID_ERRNO 1 and CHECK_INPUT 0.
+ */
+#ifndef OPTIMISE_SIZE
+# ifdef __OPTIMIZE_SIZE__
+#  define OPTIMISE_SIZE 1
+# else
+#  define OPTIMISE_SIZE 0
+# endif
+#endif
+
 /*****************************************************************************/
 /* nothing should be changed below */
 

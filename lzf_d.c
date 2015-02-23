@@ -52,7 +52,7 @@
 #endif
 #endif
 
-unsigned int 
+unsigned int
 lzf_decompress (const void *const in_data,  unsigned int in_len,
                 void             *out_data, unsigned int out_len)
 {
@@ -85,6 +85,9 @@ lzf_decompress (const void *const in_data,  unsigned int in_len,
 
 #ifdef lzf_movsb
           lzf_movsb (op, ip, ctrl);
+#elif OPTIMISE_SIZE
+          while (ctrl--)
+            *op++ = *ip++;
 #else
           switch (ctrl)
             {
@@ -141,6 +144,12 @@ lzf_decompress (const void *const in_data,  unsigned int in_len,
 #ifdef lzf_movsb
           len += 2;
           lzf_movsb (op, ref, len);
+#elif OPTIMISE_SIZE
+          len += 2;
+
+          do
+            *op++ = *ref++;
+          while (--len);
 #else
           switch (len)
             {
@@ -155,7 +164,7 @@ lzf_decompress (const void *const in_data,  unsigned int in_len,
                   }
                 else
                   {
-                    /* overlapping, use octte by octte copying */
+                    /* overlapping, use octet by octet copying */
                     do
                       *op++ = *ref++;
                     while (--len);
