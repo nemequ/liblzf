@@ -88,7 +88,7 @@ lzf_compress_best (const void *const in_data, unsigned int in_len,
       int best_l = 0;
       const u8 *best_p;
       int e = (in_end - ip < MAX_REF ? in_end - ip : MAX_REF) - 1;
-      unsigned int res = ((unsigned int)ip) & (MAX_OFF - 1);
+      unsigned int res = ((unsigned long)ip) & (MAX_OFF - 1);
       u16 hash = HASH (ip);
       u16 diff;
       const u8 *b = ip < (u8 *)in_data + MAX_OFF ? in_data : ip - MAX_OFF;
@@ -115,7 +115,7 @@ lzf_compress_best (const void *const in_data, unsigned int in_len,
                     }
                 }
 
-          diff = prev [((unsigned int)p) & (MAX_OFF - 1)];
+          diff = prev [((unsigned long)p) & (MAX_OFF - 1)];
           p = diff ? p - diff : 0;
         }
 
@@ -159,7 +159,7 @@ lzf_compress_best (const void *const in_data, unsigned int in_len,
           do
             {
               u16 hash = HASH (ip);
-              res = ((unsigned int)ip) & (MAX_OFF - 1);
+              res = ((unsigned long)ip) & (MAX_OFF - 1);
 
               p = first [hash];
               prev [res] = ip - p; /* update ptr to previous hash match */
