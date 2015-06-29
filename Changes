@@ -2,7 +2,9 @@
 TODO: try unaligned copy again in decompressor
 TODO: allow size-optimised binaries by avoiding unrolling
 TODO: implement lzf_c_best in lzf.
-TODO: fix lzf_c_best.
+
+3.8 (unreleased)
+	- support a state arg for lzf_c_best.
 
 3.7 (unreleased)
 	- add lzf_c_best.c, a slower but better compressor.

@@ -171,6 +171,10 @@ using namespace std;
 # include <limits.h>
 #endif
 
+#if ULTRA_FAST
+# undef VERY_FAST
+#endif
+
 #ifndef LZF_USE_OFFSETS
 # ifdef _WIN32
 #  define LZF_USE_OFFSETS defined(_M_X64)
@@ -198,8 +202,6 @@ typedef unsigned char u8;
 # endif
 #endif
 
-typedef LZF_HSLOT LZF_STATE[1 << (HLOG)];
-
 #if USHRT_MAX == 65535
    typedef unsigned short u16;
 #elif UINT_MAX == 65535
@@ -209,9 +211,17 @@ typedef LZF_HSLOT LZF_STATE[1 << (HLOG)];
 # define STRICT_ALIGN 1
 #endif
 
-#if ULTRA_FAST
-# undef VERY_FAST
-#endif
+#define LZF_MAX_LIT (1 <<  5)
+#define LZF_MAX_OFF (1 << 13)
+#define LZF_MAX_REF ((1 << 8) + (1 << 3))
+
+typedef LZF_HSLOT LZF_STATE[1 << (HLOG)];
+
+typedef struct
+{
+  const u8 *first [1 << (6+8)]; /* most recent occurance of a match */
+  u16 prev [LZF_MAX_OFF]; /* how many bytes to go backwards for the next match */
+} LZF_STATE_BEST[1];
 
 #endif
 

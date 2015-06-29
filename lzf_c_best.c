@@ -38,10 +38,6 @@
 
 #define HASH(p) (p[0] << 6) ^ (p[1] << 3) ^ p[2]
 
-#define        MAX_LIT        (1 <<  5)
-#define        MAX_OFF        (1 << 13)
-#define        MAX_REF        ((1 << 8) + (1 << 3))
-
 #if __GNUC__ >= 3
 # define expect(expr,value)         __builtin_expect ((expr),(value))
 # define inline                     inline
@@ -64,15 +60,21 @@
 
 unsigned int
 lzf_compress_best (const void *const in_data, unsigned int in_len,
-	           void *out_data, unsigned int out_len)
+	           void *out_data, unsigned int out_len
+#if LZF_STATE_ARG
+              , LZF_STATE_BEST state
+#endif
+              )
 {
   const u8 *ip = (const u8 *)in_data;
         u8 *op = (u8 *)out_data;
   const u8 *in_end  = ip + in_len;
         u8 *out_end = op + out_len;
 
-  const u8 *first [1 << (6+8)]; /* most recent occurance of a match */
-  u16 prev [MAX_OFF]; /* how many bytes to go backwards for the next match */
+#if !LZF_STATE_ARG
+  LZF_STATE_BEST state;
+#endif
+#define STATE state[0]
 
   int lit;
 
@@ -87,37 +89,37 @@ lzf_compress_best (const void *const in_data, unsigned int in_len,
     {
       int best_l = 0;
       const u8 *best_p;
-      int e = (in_end - ip < MAX_REF ? in_end - ip : MAX_REF) - 1;
-      unsigned int res = ((unsigned long)ip) & (MAX_OFF - 1);
+      int e = (in_end - ip < LZF_MAX_REF ? in_end - ip : LZF_MAX_REF) - 1;
+      unsigned int res = ((unsigned long)ip) & (LZF_MAX_OFF - 1);
       u16 hash = HASH (ip);
       u16 diff;
-      const u8 *b = ip < (u8 *)in_data + MAX_OFF ? in_data : ip - MAX_OFF;
-      const u8 *p = first [hash];
-      prev [res] = ip - p; /* update ptr to previous hash match */
-      first [hash] = ip; /* first hash match is here */
+      const u8 *b = ip < (u8 *)in_data + LZF_MAX_OFF ? in_data : ip - LZF_MAX_OFF;
+      const u8 *p = STATE.first [hash];
+      STATE.prev [res] = ip - p; /* update ptr to previous hash match */
+      STATE.first [hash] = ip; /* first hash match is here */
 
       if (p < ip)
-      while (p >= b)
-        {
-          if (p[2] == ip[2]) /* first two bytes almost always match */
-            if (p[best_l] == ip[best_l]) /* new match must be longer than the old one to qualify */
-              if (p[1] == ip[1] && p[0] == ip[0]) /* just to be sure */
-                {
-                  int l = 3;
+        while (p >= b)
+          {
+            if (p[2] == ip[2]) /* first two bytes almost always match */
+              if (p[best_l] == ip[best_l]) /* new match must be longer than the old one to qualify */
+                if (p[1] == ip[1] && p[0] == ip[0]) /* just to be sure */
+                  {
+                    int l = 3;
 
-                  while (p[l] == ip[l] && l < e)
-                    ++l;
+                    while (p[l] == ip[l] && l < e)
+                      ++l;
 
-                  if (l >= best_l)
-                    {
-                      best_p = p;
-                      best_l = l;
-                    }
-                }
+                    if (l >= best_l)
+                      {
+                        best_p = p;
+                        best_l = l;
+                      }
+                  }
 
-          diff = prev [((unsigned long)p) & (MAX_OFF - 1)];
-          p = diff ? p - diff : 0;
-        }
+            diff = STATE.prev [((unsigned long)p) & (LZF_MAX_OFF - 1)];
+            p = diff ? p - diff : 0;
+          }
 
       if (best_l)
         {
@@ -159,11 +161,11 @@ lzf_compress_best (const void *const in_data, unsigned int in_len,
           do
             {
               u16 hash = HASH (ip);
-              res = ((unsigned long)ip) & (MAX_OFF - 1);
+              res = ((unsigned long)ip) & (LZF_MAX_OFF - 1);
 
-              p = first [hash];
-              prev [res] = ip - p; /* update ptr to previous hash match */
-              first [hash] = ip; /* first hash match is here */
+              p = STATE.first [hash];
+              STATE.prev [res] = ip - p; /* update ptr to previous hash match */
+              STATE.first [hash] = ip; /* first hash match is here */
 
               ip++;
             }
@@ -177,7 +179,7 @@ lzf_compress_best (const void *const in_data, unsigned int in_len,
 
           lit++; *op++ = *ip++;
 
-          if (expect_false (lit == MAX_LIT))
+          if (expect_false (lit == LZF_MAX_LIT))
             {
               op [- lit - 1] = lit - 1; /* stop run */
               lit = 0; op++; /* start run */
@@ -192,7 +194,7 @@ lzf_compress_best (const void *const in_data, unsigned int in_len,
     {
       lit++; *op++ = *ip++;
 
-      if (expect_false (lit == MAX_LIT))
+      if (expect_false (lit == LZF_MAX_LIT))
         {
           op [- lit - 1] = lit - 1; /* stop run */
           lit = 0; op++; /* start run */
@@ -203,5 +205,8 @@ lzf_compress_best (const void *const in_data, unsigned int in_len,
   op -= !lit; /* undo run if length is zero */
 
   return op - (u8 *)out_data;
+
+#undef STATE
 }
+
 

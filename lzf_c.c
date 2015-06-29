@@ -71,10 +71,6 @@
 # define IDX(h) ((h) & (HSIZE - 1))
 #endif
 
-#define        MAX_LIT        (1 <<  5)
-#define        MAX_OFF        (1 << 13)
-#define        MAX_REF        ((1 << 8) + (1 << 3))
-
 #if __GNUC__ >= 3
 # define expect(expr,value)         __builtin_expect ((expr),(value))
 # define inline                     inline
@@ -154,7 +150,7 @@ lzf_compress (const void *const in_data, unsigned int in_len,
 #if INIT_HTAB
           && ref < ip /* the next test will actually take care of this, but this is faster */
 #endif
-          && (off = ip - ref - 1) < MAX_OFF
+          && (off = ip - ref - 1) < LZF_MAX_OFF
           && ref > (u8 *)in_data
           && ref[2] == ip[2]
 #if STRICT_ALIGN
@@ -167,7 +163,7 @@ lzf_compress (const void *const in_data, unsigned int in_len,
           /* match found at *ref++ */
           unsigned int len = 2;
           unsigned int maxlen = in_end - ip - len;
-          maxlen = maxlen > MAX_REF ? MAX_REF : maxlen;
+          maxlen = maxlen > LZF_MAX_REF ? LZF_MAX_REF : maxlen;
 
           if (expect_false (op + 3 + 1 >= out_end)) /* first a faster conservative test */
             if (op - !lit + 3 + 1 >= out_end) /* second the exact but rare test */
@@ -266,7 +262,7 @@ lzf_compress (const void *const in_data, unsigned int in_len,
 
           lit++; *op++ = *ip++;
 
-          if (expect_false (lit == MAX_LIT))
+          if (expect_false (lit == LZF_MAX_LIT))
             {
               op [- lit - 1] = lit - 1; /* stop run */
               lit = 0; op++; /* start run */
@@ -281,7 +277,7 @@ lzf_compress (const void *const in_data, unsigned int in_len,
     {
       lit++; *op++ = *ip++;
 
-      if (expect_false (lit == MAX_LIT))
+      if (expect_false (lit == LZF_MAX_LIT))
         {
           op [- lit - 1] = lit - 1; /* stop run */
           lit = 0; op++; /* start run */
